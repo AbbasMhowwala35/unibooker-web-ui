@@ -1,0 +1,108 @@
+.mainSection {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  
+  .carImage img {
+    width: 100%;
+    border-radius: 8px;
+  }
+  
+  .carDetails {
+    flex: 1;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  .rating {
+    color: #ffcc00;
+  }
+  
+  .hostedBy {
+    margin-top: 10px;
+  }
+  
+  .infoList, .featuresList {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+  }
+  
+  .infoList li, .featuresList li {
+    margin: 5px 0;
+  }
+  
+  .priceBox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    font-size: 1.5rem;
+    color: #28a745;
+    font-weight: bold;
+  }
+  
+  .availabilityButton {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .aboutCar {
+    margin: 20px 0;
+  }
+  
+  .mapSection img {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+  
+  .footer {
+    background: #e3f2fd;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .subscribeBox {
+    margin-bottom: 20px;
+  }
+  
+  .subscribeBox input {
+    padding: 10px;
+    width: 60%;
+    margin-right: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .subscribeBox button {
+    padding: 10px 15px;
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .footerInfo {
+    display: flex;
+    justify-content: space-around;
+    text-align: left;
+  }
+  
+  .section h5 {
+    margin-bottom: 10px;
+    color: #555;
+  }
+  
+  .section p {
+    color: #777;
+  }
+  

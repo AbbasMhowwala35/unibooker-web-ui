@@ -1,0 +1,78 @@
+.page {
+  font-family: var(--font-jost), sans-serif;
+}
+
+.cars_row { 
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 20px;
+}
+
+.car_list_main {
+  padding: 100px 0;
+}
+
+.main_heading
+{
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.filter_section{ 
+    background-color: #fff;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    padding: 20px;
+    border-radius: 20px;
+    height: 100%;
+}
+
+.filter_section h5 {
+  margin: 20px 0;
+  font-size: 16px;
+}
+
+.filter_section ul, .checkbox {
+  padding-bottom: 30px;
+  padding-left: 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.filter_section ul li input[type="checkbox"]:checked {
+  background-color: #E94165;
+  border-color: #E94165; 
+  color: #fff !important;
+}
+
+.filter_section ul li {
+  list-style-type: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.filter_section ul li input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  appearance: none;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+}
+
+.filter_section ul li input[type="checkbox"]:checked::after {
+  content: '\2713';
+  font-size: 16px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

@@ -1,0 +1,40 @@
+.most_viewed_cars .card img {
+    width: 100%;
+}
+
+.most_viewed_cars_cards_content_top {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+}
+
+.most_viewed_cars_cards_content_bottom {
+    position: absolute;
+    bottom: 20px;
+    left: 0px;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    margin: 0 20px;
+}
+
+.most_viewed_cars_cards_content_bottom_content {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.most_viewed_cars_cards_content_bottom_content span {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.most_viewed_cars_cards_content_wishlist {
+    margin-right: 40px;
+}
+
+.most_viewed_cars_cards {
+    position: relative;
+    color: #fff;
+}
