@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import React, { useState } from 'react'
+import React from 'react'
 import styles from "@/styles/CarList.module.css";
 import { Col, Container, Row } from 'react-bootstrap';
 import CarCard from '../components/common/CarCard';
@@ -86,7 +86,6 @@ const cars = [
 
 ];
 const index = () => {
-    const [carData, setCarData] = useState<any>(cars);
     return (
         <>
             <Head>

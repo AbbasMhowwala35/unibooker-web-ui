@@ -63,14 +63,6 @@ export default function Home() {
     prevArrow: <button className={styles.prevArrow}>Prev</button>,
   };
 
-  const companyLogos = [
-    { src: "/images/company/1.png", alt: "Company Logo 1" },
-    { src: "/images/company/2.png", alt: "Company Logo 2" },
-    { src: "/images/company/3.png", alt: "Company Logo 3" },
-    { src: "/images/company/4.png", alt: "Company Logo 4" },
-    { src: "/images/company/5.png", alt: "Company Logo 5" },
-  ];
-
   const cars = [
     {
       id: "1",
@@ -211,13 +203,13 @@ export default function Home() {
             <div className={styles.cars_row}>
               {cars.map((car) => (
                 <Link
+                  key={car.id}
                   href={{
                   pathname: `/cars/${car.id}`,
                   query: { car: JSON.stringify(car) }
                 }}
                 >
                 <CarCard
-                  key={car.id}
                   id={car.id}
                   name={car.name}
                   rating={car.rating}
@@ -271,13 +263,13 @@ export default function Home() {
             <div className={styles.cars_row}>
               {cars.map((car) => (
                 <Link
+                  key={car.id}
                   href={{
                     pathname: `/cars/${car.id}`,
                     query: { car: JSON.stringify(car) }
                   }}
                   >
                   <CarCard
-                    key={car.id}
                     id={car.id}
                     name={car.name}
                     rating={car.rating}

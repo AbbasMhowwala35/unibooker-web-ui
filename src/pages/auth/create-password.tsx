@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import Newsletter from "../components/common/Newsletter";
 import styles from '@/styles/Auth.module.css';
 import Image from "next/image";

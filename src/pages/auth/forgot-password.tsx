@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import Newsletter from "../components/common/Newsletter";
 import styles from '@/styles/Auth.module.css';
 import Image from "next/image";
 import forgot_password from '../../Images/forgot_password.png';
 import { Jost } from "next/font/google";
-import { useState } from "react";
 
 const jostFont = Jost({
   variable: "--font-jost",
@@ -13,11 +12,11 @@ const jostFont = Jost({
 });
 
 const ForgotPassword = () => {
-  const [passwordVisible, setPasswordVisible] = useState(false);
+  // const [passwordVisible, setPasswordVisible] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
-  };
+  // const togglePasswordVisibility = () => {
+  //   setPasswordVisible(!passwordVisible);
+  // };
 
   return (
     <>

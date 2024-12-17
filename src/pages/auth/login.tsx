@@ -90,7 +90,7 @@ const Login = () => {
                   </div>
                   {/* Sign Up Option */}
                   <div className={styles.authLinks}>
-                    <p>Don't have an account?<Link href="/auth/signup"> Sign up</Link></p>
+                    <p>Don&apos;t have an account?<Link href="/auth/signup"> Sign up</Link></p>
                   </div>
                 </div>
               </Col>
