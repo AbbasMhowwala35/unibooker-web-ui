@@ -5,7 +5,7 @@ import Link from 'next/link';
 const CreateTicket = () => {
     const [isTicketCreated, setIsTicketCreated] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsTicketCreated(true);
     };

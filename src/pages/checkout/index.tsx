@@ -35,7 +35,7 @@ export default function Home() {
                             <div className={styles.checkoutImgSection}>
                                 <div className={styles.checkoutImgSectionBlock}>
                                     <Image src={car} className="img-fluid mb-4" alt="Car" />
-                                    {/* <Image src={wishlist} className={styles.checkoutImgSectionBlockWishlist} alt="wishlist" /> */}
+                                    <Image src={wishlist} className={styles.checkoutImgSectionBlockWishlist} alt="wishlist" />
                                 </div>
                                 <div className={styles.checkoutContentSectionBlock}>
                                     <div className={styles.checkoutContentHeadingBlock}>
