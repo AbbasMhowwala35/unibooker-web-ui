@@ -160,3 +160,9 @@
     background-color: #E94165;
     border-color: #E94165;
 }
+
+@media screen and (max-width: 767px) {
+    .checkoutImgSection {
+        margin-bottom: 20px;
+    }
+}

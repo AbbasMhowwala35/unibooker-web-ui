@@ -26,7 +26,7 @@ const ForgotPassword = () => {
             <Row className="align-items-center">
               <Col md={6}>
                 <div className={styles.authBox_image}>
-                  <Image src={forgot_password} alt="Login" />
+                  <Image src={forgot_password} className="img-fluid" alt="Login" />
                 </div>
               </Col>
               <Col md={6}>

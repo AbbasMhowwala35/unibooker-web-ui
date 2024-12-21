@@ -49,7 +49,7 @@ const CarDetails = () => {
                     <Row className='align-items-center'>
                         <Col md={7}>
                             <div className={styles.carDetailImage}>
-                                <Image src={image} alt="Car" />
+                                <Image src={image} className="img-fluid" alt="Car" />
                             </div>
                         </Col>
                         <Col md={5}>

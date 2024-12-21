@@ -8,6 +8,10 @@ import { Jost } from 'next/font/google'
 import styles from "../../styles/Profile.module.css";
 import Head from 'next/head'
 import { FaClipboardList, FaCog, FaStar, FaUserEdit } from 'react-icons/fa'
+import Wallet from '../components/common/Wallet'
+import { BsWallet2 } from 'react-icons/bs'
+import Tickets from '../components/common/Tickets'
+import CreateTicket from '../components/common/CreateTicket'
 
 // Define Jost font
 const jostFont = Jost({
@@ -70,6 +74,30 @@ const Index = () => {
                                         </>
                                     } 
                                     />
+                                    <Tab 
+                                    eventKey="wallet" 
+                                    title={
+                                        <>
+                                        <BsWallet2 className="me-2" /> Wallet
+                                        </>
+                                    } 
+                                    />
+                                    <Tab 
+                                    eventKey="ticket" 
+                                    title={
+                                        <>
+                                        <BsWallet2 className="me-2" /> Ticket
+                                        </>
+                                    } 
+                                    />
+                                    <Tab 
+                                    eventKey="createTicket" 
+                                    title={
+                                        <>
+                                        <BsWallet2 className="me-2" /> Create Ticket
+                                        </>
+                                    } 
+                                    />
                                 </Tabs>
                             </div>
                         </Col>
@@ -86,6 +114,15 @@ const Index = () => {
                                 </Tab.Pane>
                                 <Tab.Pane eventKey="settings" active={activeKey === 'settings'}>
                                     <Settings />
+                                </Tab.Pane>
+                                <Tab.Pane eventKey="wallet" active={activeKey === 'wallet'}>
+                                    <Wallet />
+                                </Tab.Pane>
+                                <Tab.Pane eventKey="ticket" active={activeKey === 'ticket'}>
+                                    <Tickets />
+                                </Tab.Pane>
+                                <Tab.Pane eventKey="createTicket" active={activeKey === 'createTicket'}>
+                                    <CreateTicket />
                                 </Tab.Pane>
                             </Tab.Content>
                         </Col>

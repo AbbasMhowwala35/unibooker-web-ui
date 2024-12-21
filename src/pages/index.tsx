@@ -51,7 +51,30 @@ export default function Home() {
     speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
-  };
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 4,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
+  };  
 
   const settings = {
     dots: false,
@@ -99,11 +122,11 @@ export default function Home() {
         <div className={styles.hero_bg}>
           <Container>
             <Row className="align-items-center">
-              <Col md={6}>
+              <Col md={12} lg={6} xl={6}>
                 <h1>Easy and Convenient Way of Car Booking in <span>UniBooker</span></h1>
                 <p>Vestibulum ultricies aliquam convallis. Maecenas ut tellus mi. Proin tincidunt, lectus eu volutpat.</p>
               </Col>
-              <Col md={6}>
+              <Col md={12} lg={6} xl={6}>
                 <Card className={styles.search_box}>
                   <Card.Body>
                     <form>
@@ -288,7 +311,7 @@ export default function Home() {
             <h3>Client Testimonial</h3>
             <Row className="align-items-baseline">
               <Col md={6}>
-                <Image src={testimonial} className={styles.travel_stories_img} alt="Travel Story" />
+                <Image src={testimonial} className={`${styles.travel_stories_img} img-fluid`} alt="Travel Story" />
               </Col>
               <Col md={6}>
                 <div>
@@ -296,7 +319,7 @@ export default function Home() {
                     {testimonials.map((testimonial, index) => (
                       <div key={index} className={styles.testimonialSlide}>
                         <p>{testimonial.testimonial}</p>
-                        <div className="d-flex gap-3">
+                        <div className={`${styles.testimonialUser} d-flex gap-3`}>
                           <Image src={testimonial.image} className={styles.testimonial_img} alt={`Testimonial from ${testimonial.name}`} />
                           <div className={styles.clientInfo}>
                             <h5>{testimonial.name}</h5>

@@ -36,24 +36,20 @@ const Settings = () => {
             </div>
             <span className={styles.settingArrow}>&gt;</span>
           </div>
-
           {/* Notification Header */}
           <h5 className={styles.notificationHeader}>Notification</h5>
-
           {/* Push Notification */}
           <div className={styles.settingItem}>
             <FaBell className={styles.settingIcon} />
             <span>Push Notification</span>
             <Form.Check type="switch" className={styles.settingSwitch} defaultChecked />
           </div>
-
           {/* SMS Notification */}
           <div className={styles.settingItem}>
             <FaSms className={styles.settingIcon} />
             <span>SMS Notification</span>
             <Form.Check type="switch" className={styles.settingSwitch} defaultChecked />
           </div>
-
           {/* Email Notification */}
           <div className={styles.settingItem}>
             <FaEnvelope className={styles.settingIcon} />

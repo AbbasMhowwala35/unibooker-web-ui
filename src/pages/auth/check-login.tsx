@@ -22,7 +22,7 @@ const Loggedin = () => {
             <Row className="align-items-center">
               <Col md={8} className="m-auto text-center">
                 <div className={styles.authBox_image}>
-                  <Image src={checkLogin} alt="Login" />
+                  <Image src={checkLogin} className="img-fluid" alt="Login" />
                 </div>
                 <div className={styles.authBox}>
                   <div className={styles.contentBox}>
@@ -32,7 +32,7 @@ const Loggedin = () => {
                   </div>
                 </div>
                 <div className={styles.patternBox}>
-                    <Image src={pattern} alt="Pattern" />
+                    <Image src={pattern} className="img-fluid" alt="Pattern" />
                 </div>
               </Col>
             </Row>

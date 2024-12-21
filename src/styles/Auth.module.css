@@ -73,7 +73,8 @@
   background: #6a11cb;
 }
 
-.authParaLoggedin, .authParaLoggedinLink {
+.authParaLoggedin,
+.authParaLoggedinLink {
   color: #E94165;
 }
 
@@ -158,4 +159,11 @@
   width: 40px;
   height: 40px;
   color: #E94165;
+}
+
+@media screen and (max-width: 767px) {
+  .patternBox {
+    bottom: 0;
+    right: 20px;
+  }
 }

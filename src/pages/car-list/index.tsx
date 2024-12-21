@@ -4,6 +4,7 @@ import styles from "@/styles/CarList.module.css";
 import { Col, Container, Row } from 'react-bootstrap';
 import CarCard from '../components/common/CarCard';
 import { Jost } from 'next/font/google';
+import Link from 'next/link';
 const jostFont = Jost({
     variable: "--font-jost",
     subsets: ["latin"],
@@ -138,17 +139,24 @@ const index = () => {
                         <Col md={9} className='text-center'>
                             <div className={styles.cars_row}>
                                 {cars.map((car) => (
-                                    <CarCard
+                                    <Link
                                         key={car.id}
-                                        id={car.id}
-                                        name={car.name}
-                                        rating={car.rating}
-                                        reviews={car.reviews}
-                                        location={car.location}
-                                        price={car.price}
-                                        distance={car.distance}
-                                        wishlist={car.wishlist}
-                                    />
+                                        href={{
+                                            pathname: `/cars/${car.id}`,
+                                            query: { car: JSON.stringify(car) }
+                                        }}
+                                    >
+                                        <CarCard
+                                            id={car.id}
+                                            name={car.name}
+                                            rating={car.rating}
+                                            reviews={car.reviews}
+                                            location={car.location}
+                                            price={car.price}
+                                            distance={car.distance}
+                                            wishlist={car.wishlist}
+                                        />
+                                    </Link>
                                 ))}
                             </div>
                         </Col>

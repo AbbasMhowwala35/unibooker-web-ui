@@ -30,7 +30,7 @@ const CarCard: React.FC<CarCardProps> = ({
 }) => {
     
     return (
-        <Link href={`/cars/${id}`} passHref>
+        // <Link href={`/cars/${id}`} passHref>
         <div className={styles.most_viewed_cars_cards}>
             <Image src={car1} alt={name} />
             <div className={styles.most_viewed_cars_cards_content_top}>
@@ -57,7 +57,7 @@ const CarCard: React.FC<CarCardProps> = ({
                 )}
             </div>
         </div>
-        </Link>
+        // </Link>
     );
 };
 

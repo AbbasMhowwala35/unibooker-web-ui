@@ -9,7 +9,7 @@ const Newsletter = () => {
           <Container>
             <Row className="align-items-center">
               <Col md={6} className="text-start">
-                <h3>Stay Connected <br /> With Us</h3>
+                <h3>Stay Connected With Us</h3>
               </Col>
               <Col md={6} className="text-end">
                 <p>Subscribe and receive a discount of up to 15% on your first purchase!</p>

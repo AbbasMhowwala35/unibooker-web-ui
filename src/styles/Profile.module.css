@@ -229,6 +229,53 @@
     display: flex;
 }
 
+.ReviewCard {
+    background-color: #F7F7F7;
+    border-radius: 20px;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.ReviewCardHeader {
+    display: flex;
+    justify-content: space-between;
+}
+
+.ReviewCardHeaderAvtar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.ReviewCardImage {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    border: 1px solid #fff;
+}
+
+.ReviewCardInfo h4 {
+    font-size: 20px;
+    margin-bottom: 0;
+}
+
+.ReviewsInfo {
+    text-align: right;
+}
+
+.ReviewDate {
+    font-size: 15px;
+    color: #9E9E9E;
+}
+
+.ReviewText {
+    margin: 20px 0;
+    font-size: 15px;
+    color: #9E9E9E;
+    max-width: 500px;
+}
+
 /* Tabs */
 .Tabs {
     display: flex;
@@ -240,7 +287,7 @@
 }
 
 .TabButton {
-    border-radius: 5px;
+    /* border-radius: 5px; */
     background: #f9f9f9;
     cursor: pointer;
     margin-right: 20px;
@@ -272,3 +319,213 @@
     display: flex;
     border-bottom: 1px solid #f7f7f7;
 }
+
+.ProfileCardRow {
+    margin: 30px 0;
+    background-color: #F7F7F7;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.ProfileCardRowIn {
+    display: flex;
+    justify-content: space-between;
+}
+
+.ProfileCardPrice p {
+    color: #3ebd93;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.ProfileCardInfo {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.ProfileCardInfo p {
+    margin-bottom: 0;
+    font-size: 18px;
+    color: #000;
+}
+
+.ProfileCardRowMoreInfo p {
+    margin-bottom: 0;
+    margin-top: 20px;
+}
+
+.TicketInfo h4 {
+    color: #E94165;
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.deliveredText {
+    color: #000;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.ProfileCreateTicketForm {
+    margin: 30px 0  ;
+}
+
+.ProfileCreateTicketForm input {
+    background-color: #F7F7F7;
+    height: 65px;
+    border: none;
+    padding: 20px;
+}
+
+.ProfileCreateTicketForm textarea {
+    min-height: 300px;
+    background-color: #F7F7F7;
+    border: none;
+    padding: 20px;
+}
+
+.ProfileCreateTicketFormButton {
+    min-width: 300px;
+    background-color: #E94165 !important;
+    height: 60px;
+    color: #fff;
+    border-radius: 12px;
+}
+
+.ProfileCreateTicket h4 {
+    font-size: 24px;
+}
+
+.ProfileCreateTicket h4 a {
+    color: #E94165;
+}
+
+.ProfileCreateTicket p {
+    font-size: 16px;
+    color: #616161;
+    margin-bottom: 30px;
+    line-height: 27px;
+    text-align: justify;
+}
+
+/* Container for the Ticket Display Card */
+.TicketDisplayCard {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Ticket Header */
+  .TicketHeader {
+    margin-bottom: 20px;
+  }
+  
+  .TicketHeader h4 {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  .TicketHeader h3 {
+    color: #343a40;
+    font-size: 24px;
+    margin-bottom: 15px;
+  }
+  
+  .TicketDescription {
+    color: #616161;
+    font-size: 16px;
+    line-height: 1.5;
+    background-color: #f7f7f7;
+    padding: 30px;
+    margin: 30px 0;
+    border-radius: 20px;
+  }
+  
+  /* Chat Section */
+  .ChatSection {
+    margin-top: 20px;
+  }
+  
+  .ChatBubbleLeft,
+  .ChatBubbleRight {
+    max-width: 50%;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    padding: 20px;
+  }
+  
+  .ChatBubbleLeft {
+    background-color: rgb(233 65 101 / 80%); 
+    color: #fff;
+    align-self: flex-start;
+  }
+  
+  .ChatBubbleRight {
+    background-color: #f8f9fa;
+    color: #343a40;
+    align-self: flex-end;
+    margin-left: auto;
+  }
+  
+  .ChatTimestamp {
+    display: block;
+    font-size: 12px;
+    color: #adb5bd;
+    margin-top: 5px;
+    text-align: right;
+  }
+  
+  /* Message Input Section */
+  .MessageInputSection {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #dee2e6;
+    margin-top: 20px;
+    padding-top: 10px;
+  }
+  
+  .MessageInput {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-right: 10px;
+    outline: none;
+  }
+  
+  .MessageInput:focus {
+    border-color: #007bff;
+  }
+  
+  .SendMessageButton {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .SendMessageButton:hover {
+    background-color: #0056b3;
+  }
+  @media screen and (max-width: 767px) {
+    .ProfileChildCardForm {
+        padding: 20px;
+    }
+    .ProfileTabsMain {
+        margin: 20px 0;
+    }
+  }

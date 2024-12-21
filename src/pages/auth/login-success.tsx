@@ -27,7 +27,7 @@ const LoginSuccess = () => {
             <Row className="align-items-center">
               <Col md={6}>
                 <div className={styles.authBox_image}>
-                  <Image src={success} alt="changePassword" />
+                  <Image src={success} className="img-fluid" alt="changePassword" />
                 </div>
               </Col>
               <Col md={6} className="text-center">
@@ -45,7 +45,7 @@ const LoginSuccess = () => {
                   </div>
                 </div>
                 <div className={styles.patternBox}>
-                    <Image src={pattern} alt="Pattern" />
+                    <Image src={pattern} className="img-fluid" alt="Pattern" />
                 </div>
               </Col>
             </Row>

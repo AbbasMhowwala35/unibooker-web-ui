@@ -30,7 +30,7 @@ const CreatePassword = () => {
             <Row className="align-items-center">
               <Col md={6}>
                 <div className={styles.authBox_image}>
-                  <Image src={changePassword} alt="changePassword" />
+                  <Image src={changePassword} className="img-fluid" alt="changePassword" />
                 </div>
               </Col>
               <Col md={6}>
@@ -88,7 +88,7 @@ const CreatePassword = () => {
                   </div>
                 </div>
                 <div className={styles.patternBox}>
-                    <Image src={pattern} alt="Pattern" />
+                    <Image src={pattern} className="img-fluid" alt="Pattern" />
                 </div>
               </Col>
             </Row>

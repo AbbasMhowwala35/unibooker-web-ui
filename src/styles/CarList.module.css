@@ -76,3 +76,10 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+
+@media screen and (max-width: 767px) {
+  .cars_row {
+    grid-template-columns: 1fr;
+  }
+}

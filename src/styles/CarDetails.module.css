@@ -121,3 +121,14 @@
   color: #616161;
   line-height: 30px;
 }
+
+@media screen and (max-width: 767px) {
+  .carDetailImage img {
+    width: 100%;
+    height: 100%;
+    margin: 20px 0;
+  }  
+  .themeBtn {
+    padding: revert;
+  }
+}

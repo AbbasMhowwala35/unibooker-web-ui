@@ -31,7 +31,7 @@ const Signup = () => {
             <Row className="align-items-center">
               <Col md={6}>
                 <div className={styles.authBox_image}>
-                  <Image src={signup} alt="signup" />
+                  <Image src={signup} className="img-fluid" alt="signup" />
                 </div>
               </Col>
               <Col md={6}>
