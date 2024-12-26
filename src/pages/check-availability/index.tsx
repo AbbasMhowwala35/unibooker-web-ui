@@ -19,10 +19,7 @@ const CheckAvailability = () => {
     const handleGuestChange = (change: number) => {
         setGuests((prev) => Math.max(1, prev + change));
     };
-
-    const handleContinue = () => {
-        console.log({ fromDate, toDate, guests, note });
-    };
+    
     const handleRedirect = () => {
         router.push('/checkout');  
     };

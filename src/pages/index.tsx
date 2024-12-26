@@ -30,6 +30,80 @@ const jostFont = Jost({
   variable: "--font-jost",
   subsets: ["latin"],
 });
+const sliderSettings = {
+  dots: false,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 5,
+  slidesToScroll: 1,
+  margin: 30,
+  arrows: true,
+  prevArrow: <div className="prev-arrow">Prev</div>,
+  nextArrow: <div className="next-arrow">Next</div>,
+  responsive: [
+    {
+      breakpoint: 1024,
+      settings: {
+        slidesToShow: 4,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 768,
+      settings: {
+        slidesToShow: 2,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 480,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1,
+      },
+    },
+  ],
+};  
+
+const settings = {
+  dots: false,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+  nextArrow: <button className={styles.nextArrow}>Next</button>,
+  prevArrow: <button className={styles.prevArrow}>Prev</button>,
+};
+
+const locations = [
+  { name: 'Location 1', image: location1 },
+  { name: 'Location 2', image: location2 },
+  { name: 'Location 3', image: location3 },
+  { name: 'Location 4', image: location4 },
+];
+
+const cars = [
+  {
+    id: "1",
+    name: "Tesla",
+    rating: 5,
+    reviews: 242,
+    location: "Wilora NT 0872, Australia",
+    price: "$165,3",
+    distance: "12 km",
+    wishlist: "/static/wishlist.png",
+  },
+  {
+    id: "2",
+    name: "BMW",
+    rating: 4.5,
+    reviews: 128,
+    location: undefined,
+    price: "$120,0",
+    distance: "8 km",
+    wishlist: undefined,
+  },
+];
 
 export default function Home() {
   const testimonials = [
@@ -44,81 +118,6 @@ export default function Home() {
       location: 'London, UK',
       testimonial: 'Amazing experience! I highly recommend this service.',
       image: person1,
-    },
-  ];
-
-  const locations = [
-    { name: 'Location 1', image: location1 },
-    { name: 'Location 2', image: location2 },
-    { name: 'Location 3', image: location3 },
-    { name: 'Location 4', image: location4 },
-  ];
-
-  const sliderSettings = {
-    dots: false,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 1,
-    margin: 30,
-    arrows: true,
-    prevArrow: <div className="prev-arrow">Prev</div>,
-    nextArrow: <div className="next-arrow">Next</div>,
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 4,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
-      },
-    ],
-  };  
-
-  const settings = {
-    dots: false,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    nextArrow: <button className={styles.nextArrow}>Next</button>,
-    prevArrow: <button className={styles.prevArrow}>Prev</button>,
-  };
-
-  const cars = [
-    {
-      id: "1",
-      name: "Tesla",
-      rating: 5,
-      reviews: 242,
-      location: "Wilora NT 0872, Australia",
-      price: "$165,3",
-      distance: "12 km",
-      wishlist: "/static/wishlist.png",
-    },
-    {
-      id: "2",
-      name: "BMW",
-      rating: 4.5,
-      reviews: 128,
-      location: undefined,
-      price: "$120,0",
-      distance: "8 km",
-      wishlist: undefined,
     },
   ];
 
@@ -239,7 +238,6 @@ export default function Home() {
             <Popularlocations
               locations={locations}
               sliderSettings={sliderSettings}
-              exploreLink="/locations"
               variant="slider" // GRID FOR GRIDS
             />
             <Link className={styles.btn_link} href="/">Explore All</Link>

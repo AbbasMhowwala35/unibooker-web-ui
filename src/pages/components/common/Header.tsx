@@ -9,25 +9,21 @@ import styles from "@/styles/Layout.module.css";
 import locationWhite from '../../../Images/location-white.svg';
 import { Col, Container, Row, Navbar, Nav, Form } from 'react-bootstrap';
 import { ChangeEvent, useState } from 'react';
-import { BsGeoAlt, BsPinMapFill, BsSearch } from 'react-icons/bs';
+import { BsPinMapFill, BsSearch } from 'react-icons/bs';
 import Breadcrumbs from './Breadcrumbs';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
 const Header = () => {
   const router = useRouter();
   const isHomePage = router.pathname === "/";
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [fromDate, setFromDate] = useState<Date | null>(null);
+  // const [fromDate, setFromDate] = useState<Date | null>(null);
   const [toDate, setToDate] = useState<Date | null>(null);
-  const [location, setLocation] = useState<string>('');
+  // const [location, setLocation] = useState<string>('');
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
-  const handleLocationChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setLocation(e.target.value);
-  }
 
   return (
     <>

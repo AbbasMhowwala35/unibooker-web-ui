@@ -3,7 +3,11 @@ import Slider from 'react-slick';
 import Image from 'next/image';
 import styles from "@/styles/Home.module.css";
 
-const PopularLocations = ({ locations, sliderSettings, exploreLink, variant = 'slider' }) => {
+const PopularLocations = ({ locations, sliderSettings, variant = 'slider' }) => {
+    if (!Array.isArray(locations) || locations.length === 0) {
+        console.error("The 'locations' prop is not an array or is empty.");
+        return null;
+    }
     return (
         <>
             {variant === 'slider' ? (

@@ -141,7 +141,7 @@ const EditProfile = () => {
             </div>
             <div className='mt-5'>
               <h6>About Yourself</h6>
-              <p>A common man typically leads an ordinary life, focusing on work, family, and daily activities. He might have dreams and aspirations like anyone else, and faces challenges and successes throughout life. Usually adaptable, resilient, and hardworking, a common man contributes to society in various roles, embodying the majority's experiences and values. He represents the typical person, with all the complexities and simplicities of daily existence. Amidst the myriad of roles, he may be a silent hero, an unsung bearer of society's pillars, often overlooked yet integral. His story is woven into the fabric of everyday life, echoing the collective narrative of humanity.</p>
+              <p>A common man typically leads an ordinary life, focusing on work, family, and daily activities. He might have dreams and aspirations like anyone else, and faces challenges and successes throughout life. Usually adaptable, resilient, and hardworking, a common man contributes to society in various roles, embodying the majority&apos;s experiences and values. He represents the typical person, with all the complexities and simplicities of daily existence. Amidst the myriad of roles, he may be a silent hero, an unsung bearer of society&apos;s pillars, often overlooked yet integral. His story is woven into the fabric of everyday life, echoing the collective narrative of humanity.</p>
             </div>
           </div>
         </div>

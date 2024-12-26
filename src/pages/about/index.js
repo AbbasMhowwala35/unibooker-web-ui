@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from '../../styles/About.module.css';
 import { Container, Row, Col } from 'react-bootstrap';
+import Image from 'next/image';
 
 const About = () => {
     return (
@@ -8,7 +9,7 @@ const About = () => {
             <Container>
                 <Row>
                     <Col md={6} className={styles.aboutImage}>
-                        <img
+                        <Image
                             src="https://via.placeholder.com/500"
                             alt="About Us"
                             className="img-fluid"

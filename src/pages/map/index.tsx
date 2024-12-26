@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
+import { Container, Form, Button, Card } from 'react-bootstrap';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import carImage from '../../Images/car.png';
 import styles from '@/styles/MapPage.module.css'

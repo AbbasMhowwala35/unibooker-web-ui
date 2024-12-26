@@ -12,46 +12,46 @@ const jostFont = Jost({
   variable: "--font-jost",
   subsets: ["latin"],
 });
-export default function Place() {
-  const locations = [
-    { name: 'Location 1', image: location1 },
-    { name: 'Location 2', image: location2 },
-    { name: 'Location 3', image: location3 },
-    { name: 'Location 4', image: location4 },
-    { name: 'Location 1', image: location1 },
-    { name: 'Location 2', image: location2 },
-    { name: 'Location 3', image: location3 },
-    { name: 'Location 4', image: location4 },
-    { name: 'Location 1', image: location1 },
-    { name: 'Location 2', image: location2 },
-    { name: 'Location 3', image: location3 },
-    { name: 'Location 4', image: location4 },
-  ];
 
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    responsive: [
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
+const locations = [
+  { name: 'Location 1', image: location1 },
+  { name: 'Location 2', image: location2 },
+  { name: 'Location 3', image: location3 },
+  { name: 'Location 4', image: location4 },
+  { name: 'Location 1', image: location1 },
+  { name: 'Location 2', image: location2 },
+  { name: 'Location 3', image: location3 },
+  { name: 'Location 4', image: location4 },
+  { name: 'Location 1', image: location1 },
+  { name: 'Location 2', image: location2 },
+  { name: 'Location 3', image: location3 },
+  { name: 'Location 4', image: location4 },
+];
+
+const sliderSettings = {
+  dots: true,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 3,
+  slidesToScroll: 1,
+  responsive: [
+    {
+      breakpoint: 768,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1,
       },
-    ],
-  };
+    },
+  ],
+};
 
+export default function Place() {
   return (
     <section className={`${styles.popular_locations} ${jostFont.variable}`}>
       <h2 className={styles.main_heading}>Popular Locations</h2>
       <PopularLocations
         locations={locations}
         sliderSettings={sliderSettings}
-        exploreLink="/locations"
         variant="grid"
       />
       <Link className={styles.btn_link} href="/locations">
