@@ -3,20 +3,20 @@ import { useState } from 'react';
 import styles from "../../styles/CarDetails.module.css";
 import { Button, Col, Container, Row } from 'react-bootstrap';
 import { Jost } from 'next/font/google';
-import Newsletter from '../components/common/Newsletter';
 import { BsFillSendFill, BsStarFill } from 'react-icons/bs';
 import image from '../../Images/image.jpg';
 import image2 from '../../Images/image2.png';
 import Image from 'next/image';
-import ReactImageMagnify from 'react-image-magnify';
 import Link from 'next/link';
+import Zoom from 'react-medium-image-zoom';
+import 'react-medium-image-zoom/dist/styles.css'; 
 import person from '../../Images/person1.jpg'
+import Newsletter from '../components/common/Newsletter';
 interface ImageType {
     src: string;
     alt: string;
 }
 
-// Define Jost font
 const jostFont = Jost({
     variable: "--font-jost",
     subsets: ["latin"],
@@ -25,7 +25,7 @@ const jostFont = Jost({
 const CarDetails = () => {
     const router = useRouter();
     const { id } = router.query;
-    const [selectedImage, setSelectedImage] = useState<ImageType>({ src: image.src, alt: "Default Car Image" });
+    const [selectedImage, setSelectedImage] = useState<ImageType>({ src: image.src, alt: 'Default Car Image' });
 
     const cars = [
         {
@@ -50,17 +50,21 @@ const CarDetails = () => {
         },
     ];
     const handleRedirect = () => {
-        router.push('/check-availability');  
+        router.push('/check-availability');
     };
     const car = cars.find((car) => car.id === id);
-
-    const handleImageClick = (image: ImageType) => {
-        setSelectedImage(image); // Update the selected image
-    };
 
     if (!car) {
         return <p>Car not found</p>;
     }
+    const images: ImageType[] = [
+        { src: image.src, alt: 'Car Image 1' },
+        { src: image2.src, alt: 'Car Image 2' }
+    ];
+
+    const handleThumbnailClick = (image: ImageType) => {
+        setSelectedImage(image);
+    };
 
     return (
         <>
@@ -69,33 +73,27 @@ const CarDetails = () => {
                     <Row>
                         <Col md={7}>
                             <div className={styles.carDetailImage}>
-                                <ReactImageMagnify
-                                    {...{
-                                        smallImage: {
-                                            alt: selectedImage.alt,
-                                            isFluidWidth: true,
-                                            src: selectedImage.src,
-                                        },
-                                        largeImage: {
-                                            src: selectedImage.src,
-                                            width: 1200,
-                                            height: 1200,
-                                        },
-                                        lensStyle: { backgroundColor: 'rgba(0,0,0,.3)' },
-                                    }}
-                                />
+                                <Zoom>
+                                    <Image
+                                        src={selectedImage.src}
+                                        alt={selectedImage.alt}
+                                        width={500}
+                                        height={500}
+                                        className={styles.mainImage}
+                                    />
+                                </Zoom>
                             </div>
-                            <div className={styles.gallery}>
+                            <div className={styles.thumbnailGallery}>
                                 <Row className="mt-3">
-                                    {[image, image2].map((img, index) => (
+                                    {images.map((img, index) => (
                                         <Col key={index} xs={3}>
                                             <Image
-                                                src={img}
+                                                src={img.src}
                                                 alt={`Thumbnail ${index + 1}`}
-                                                className={`img-fluid ${styles.thumbnail} ${selectedImage.src === img.src ? styles.activeThumbnail : ''}`}
-                                                onClick={() =>
-                                                    handleImageClick({ src: img.src, alt: `Thumbnail ${index + 1}` })
-                                                }
+                                                width={100}
+                                                height={100}
+                                                className={`${styles.thumbnail} ${selectedImage.src === img.src ? styles.activeThumbnail : ''}`}
+                                                onClick={() => handleThumbnailClick(img)} 
                                             />
                                         </Col>
                                     ))}
@@ -108,8 +106,8 @@ const CarDetails = () => {
                                     <div>
                                         <h1>{car.name}</h1>
                                         <p> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-                                            <path d="M15.75 7.5C15.75 12.75 9 17.25 9 17.25C9 17.25 2.25 12.75 2.25 7.5C2.25 5.70979 2.96116 3.9929 4.22703 2.72703C5.4929 1.46116 7.20979 0.75 9 0.75C10.7902 0.75 12.5071 1.46116 13.773 2.72703C15.0388 3.9929 15.75 5.70979 15.75 7.5Z" stroke="#17BEBB" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M9 9.75C10.2426 9.75 11.25 8.74264 11.25 7.5C11.25 6.25736 10.2426 5.25 9 5.25C7.75736 5.25 6.75 6.25736 6.75 7.5C6.75 8.74264 7.75736 9.75 9 9.75Z" stroke="#17BEBB" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M15.75 7.5C15.75 12.75 9 17.25 9 17.25C9 17.25 2.25 12.75 2.25 7.5C2.25 5.70979 2.96116 3.9929 4.22703 2.72703C5.4929 1.46116 7.20979 0.75 9 0.75C10.7902 0.75 12.5071 1.46116 13.773 2.72703C15.0388 3.9929 15.75 5.70979 15.75 7.5Z" stroke="#17BEBB" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M9 9.75C10.2426 9.75 11.25 8.74264 11.25 7.5C11.25 6.25736 10.2426 5.25 9 5.25C7.75736 5.25 6.75 6.25736 6.75 7.5C6.75 8.74264 7.75736 9.75 9 9.75Z" stroke="#17BEBB" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg> {car.location || 'Not Available'}</p>
                                     </div>
                                     <div className={styles.carDetailRating}>
@@ -225,14 +223,14 @@ const CarDetails = () => {
                                 <div className={styles.checkoutRightSectionPolicy}>
                                     <div className={styles.checkoutRightSectionPolicyBox}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <g clip-path="url(#clip0_1966_5371)">
-                                                <g clip-path="url(#clip1_1966_5371)">
-                                                    <path d="M8 6.13281H21" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M8 12.1328H21" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M8 18.1328H21" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M3 6.13281H3.01" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M3 12.1328H3.01" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M3 18.1328H3.01" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <g clipPath="url(#clip0_1966_5371)">
+                                                <g clipPath="url(#clip1_1966_5371)">
+                                                    <path d="M8 6.13281H21" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                    <path d="M8 12.1328H21" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                    <path d="M8 18.1328H21" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                    <path d="M3 6.13281H3.01" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                    <path d="M3 12.1328H3.01" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                    <path d="M3 18.1328H3.01" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                                 </g>
                                             </g>
                                             <defs>
@@ -248,7 +246,7 @@ const CarDetails = () => {
                                     </div>
                                     <div>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <g clip-path="url(#clip0_1966_5380)">
+                                            <g clipPath="url(#clip0_1966_5380)">
                                                 <path d="M9.99981 18.9999C9.76615 19.0004 9.53972 18.919 9.35981 18.7699C9.25855 18.686 9.17485 18.5829 9.11349 18.4665C9.05214 18.3502 9.01435 18.2229 9.00227 18.0919C8.99019 17.9609 9.00408 17.8289 9.04312 17.7033C9.08217 17.5777 9.1456 17.461 9.22981 17.3599L13.7098 11.9999L9.38981 6.62994C9.30674 6.52765 9.24471 6.40996 9.20728 6.28362C9.16985 6.15728 9.15775 6.02479 9.17169 5.89376C9.18563 5.76273 9.22533 5.63575 9.2885 5.52011C9.35168 5.40447 9.43708 5.30246 9.53981 5.21994C9.64327 5.1289 9.76444 5.06024 9.8957 5.01825C10.027 4.97626 10.1655 4.96185 10.3026 4.97594C10.4397 4.99002 10.5724 5.03229 10.6924 5.1001C10.8123 5.1679 10.917 5.25977 10.9998 5.36994L15.8298 11.3699C15.9769 11.5489 16.0573 11.7733 16.0573 12.0049C16.0573 12.2366 15.9769 12.461 15.8298 12.6399L10.8298 18.6399C10.7295 18.761 10.6021 18.8566 10.4578 18.9192C10.3136 18.9817 10.1567 19.0094 9.99981 18.9999Z" fill="#BDBDBD" />
                                             </g>
                                             <defs>
@@ -262,16 +260,16 @@ const CarDetails = () => {
                                 <div className={styles.checkoutRightSectionPolicy}>
                                     <div className={styles.checkoutRightSectionPolicyBox}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
-                                            <path d="M4 9.13281H20" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M4 15.1328H20" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M10 3.13281L8 21.1328" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M16 3.13281L14 21.1328" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M4 9.13281H20" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M4 15.1328H20" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M10 3.13281L8 21.1328" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M16 3.13281L14 21.1328" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                         <p>Cancellation Policy</p>
                                     </div>
                                     <div>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <g clip-path="url(#clip0_1966_5380)">
+                                            <g clipPath="url(#clip0_1966_5380)">
                                                 <path d="M9.99981 18.9999C9.76615 19.0004 9.53972 18.919 9.35981 18.7699C9.25855 18.686 9.17485 18.5829 9.11349 18.4665C9.05214 18.3502 9.01435 18.2229 9.00227 18.0919C8.99019 17.9609 9.00408 17.8289 9.04312 17.7033C9.08217 17.5777 9.1456 17.461 9.22981 17.3599L13.7098 11.9999L9.38981 6.62994C9.30674 6.52765 9.24471 6.40996 9.20728 6.28362C9.16985 6.15728 9.15775 6.02479 9.17169 5.89376C9.18563 5.76273 9.22533 5.63575 9.2885 5.52011C9.35168 5.40447 9.43708 5.30246 9.53981 5.21994C9.64327 5.1289 9.76444 5.06024 9.8957 5.01825C10.027 4.97626 10.1655 4.96185 10.3026 4.97594C10.4397 4.99002 10.5724 5.03229 10.6924 5.1001C10.8123 5.1679 10.917 5.25977 10.9998 5.36994L15.8298 11.3699C15.9769 11.5489 16.0573 11.7733 16.0573 12.0049C16.0573 12.2366 15.9769 12.461 15.8298 12.6399L10.8298 18.6399C10.7295 18.761 10.6021 18.8566 10.4578 18.9192C10.3136 18.9817 10.1567 19.0094 9.99981 18.9999Z" fill="#BDBDBD" />
                                             </g>
                                             <defs>
