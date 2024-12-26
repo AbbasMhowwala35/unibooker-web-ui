@@ -5,20 +5,29 @@ import logo from '../../../Images/logo.svg';
 import userIcon from '../../../Images/user.svg';
 import wishlist from '../../../Images/heart.svg';
 import cart from '../../../Images/cart.svg';
-import topbg from '../../../Images/bg-prop.svg';
 import styles from "@/styles/Layout.module.css";
 import locationWhite from '../../../Images/location-white.svg';
-import { Col, Container, Row, Navbar, Nav } from 'react-bootstrap';
+import { Col, Container, Row, Navbar, Nav, Form } from 'react-bootstrap';
 import { ChangeEvent, useState } from 'react';
-import { BsSearch } from 'react-icons/bs';
+import { BsGeoAlt, BsPinMapFill, BsSearch } from 'react-icons/bs';
 import Breadcrumbs from './Breadcrumbs';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
 const Header = () => {
   const router = useRouter();
   const isHomePage = router.pathname === "/";
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [fromDate, setFromDate] = useState<Date | null>(null);
+  const [toDate, setToDate] = useState<Date | null>(null);
+  const [location, setLocation] = useState<string>('');
+
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+  const handleLocationChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setLocation(e.target.value);
+  }
 
   return (
     <>
@@ -37,11 +46,6 @@ const Header = () => {
           </Container>
         </div>
       )}
-      {!isHomePage && (
-        <div className={styles['top-bar-img']}>
-          <Image src={topbg} alt='BG' />
-        </div>
-      )}
       <header
         className={`${styles['theme-header']} ${isHomePage ? styles['header-absolute'] : styles['header-static']}`}>
         <div className={`container d-flex justify-content-between align-items-center ${styles.headerContainer}`}>
@@ -57,7 +61,7 @@ const Header = () => {
             <Navbar expand="lg" className={styles['menu-section']}>
               <Navbar.Toggle aria-controls="basic-navbar-nav" />
               <Navbar.Collapse id="basic-navbar-nav">
-                <Nav className={`ml-auto ${styles.nav}`}>
+                <Nav className={`ml-auto gap-4 ${styles.nav}`}>
                   <Nav.Link className={`${styles['nav-link']}`} href="/">Home</Nav.Link>
                   <Nav.Link className={`${styles['nav-link']}`} href="/about">About</Nav.Link>
                   <Nav.Link className={`${styles['nav-link']}`} href="/car-list">Car List</Nav.Link>
@@ -68,11 +72,6 @@ const Header = () => {
             </Navbar>
           ) : (
             <div className={styles['search-bar']}>
-              <div className={styles['dropdown']}>
-                <button className={styles['dropdown-btn']}>
-                  Explore <span>▼</span>
-                </button>
-              </div>
               <input
                 type="text"
                 placeholder="Searching for..."
@@ -100,18 +99,13 @@ const Header = () => {
             </div>
           ) : (
             <div className={styles['profile-section']}>
-              <Image src={userIcon} className={styles['user-icon']} alt="User Profile" />
+              <Link href="/profile"><Image src={userIcon} className={styles['user-icon']} alt="User Profile" /></Link>
             </div>
           )}
         </div>
         {/* Full-Width Search Bar */}
         {!isHomePage && (
           <div className={`${styles['search-bar']} ${styles['mobile-search-bar']}`}>
-            <div className={styles['dropdown']}>
-              <button className={styles['dropdown-btn']}>
-                Explore <span>▼</span>
-              </button>
-            </div>
             <input
               type="text"
               placeholder="Searching for..."
@@ -123,6 +117,31 @@ const Header = () => {
               <BsSearch />
             </div>
           </div>
+        )}
+        {/* Date and Location Picker */}
+        {!isHomePage && (
+          <Container>
+            <div className={`${styles['date-location-picker']} d-flex align-items-center`}>
+              <div className={styles['date-picker']}>
+                <BsPinMapFill />
+                <Form.Control
+                  className={styles.customFormcontrolHeader}
+                  type="date"
+                  value={toDate ? toDate.toISOString().split('T')[0] : ''}
+                  onChange={(e) => setToDate(new Date(e.target.value))}
+                />
+              </div>
+              <div className={styles['date-picker']}>
+                <BsPinMapFill />
+                <Form.Control
+                  className={styles.customFormcontrolHeader}
+                  type="date"
+                  value={toDate ? toDate.toISOString().split('T')[0] : ''}
+                  onChange={(e) => setToDate(new Date(e.target.value))}
+                />
+              </div>
+            </div>
+          </Container>
         )}
       </header>
       {!isHomePage && (<Breadcrumbs />)}

@@ -1,7 +1,9 @@
 .page {
   font-family: var(--font-jost), sans-serif;
 }
-
+.main {
+  
+}
 /* Hero Section */
 .hero_bg {
   background-image: url('../Images/home-bg.png');
@@ -9,9 +11,9 @@
   background-position: center;
   padding: 50px 0;
   color: white;
-  min-height: 900px;
+  min-height: 100vh;
   display: flex;
-  align-items: center;
+  position: relative; 
 }
 
 .hero_bg h1 {
@@ -28,7 +30,7 @@
 
 .search_box {
   background-color: #fff;
-  padding: 30px 50px;
+  padding: 20px;
   border-radius: 20px;
 }
 
@@ -50,9 +52,78 @@
   border-color: #008683;
 }
 
+.carouselValue {
+  position: absolute;
+  bottom: -24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  right: 0;
+
+}
+
+.carouselValueContainer {
+  background-color: #F6F6F6;
+  height: 68px;
+  border-radius: 64px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 36px;
+}
+
+.carouselValueSection {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-right: 2px solid #ddd;
+  padding-right: 12px;
+}
+
+.carouselValueSectionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.carouselValueSection svg {
+  fill: #17BEBB;
+  width: 25px;
+  height: 25px;
+}
+
+.carouselValueSectionContent h4 {
+  color: #000;
+  font-size: 16px;
+  margin-bottom: 0;
+}
+
+.carouselValueSectionContent p {
+  color: #000;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+
 /* Hero Section */
 .location_slider {
   margin: 30px 0;
+}
+
+.grid_layout {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 20px;
+}
+
+.locationImg {
+  max-width: 250px;
+  height: 200px;
 }
 
 .popular_locations,
@@ -275,6 +346,7 @@
     align-items: center;
     margin: 40px 0;
   }
+
   .hero_bg p {
     text-align: center;
   }

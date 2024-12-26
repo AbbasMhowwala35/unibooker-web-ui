@@ -61,8 +61,8 @@ const Footer = () => (
           <div className={styles['app-section']}>
             <h5>Download Our App</h5>
             <div className="d-flex gap-3">
-              <Link href="/"><Image src={android} alt="App" /></Link>
-              <Link href="/"><Image src={ios} alt="App" /></Link>
+              <Link href="/"><Image src={android} alt="App" className="img-fluid" /></Link>
+              <Link href="/"><Image src={ios} alt="App" className="img-fluid" /></Link>
             </div>
           </div>
         </Col>

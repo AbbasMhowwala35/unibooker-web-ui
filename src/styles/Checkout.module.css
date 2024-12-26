@@ -32,7 +32,7 @@
     display: flex;
     justify-content: space-between;
     border-radius: 12px;
-    color: #E94165;
+    color: #17BEBB;
     cursor: pointer;
     margin-bottom: 20px;
 }
@@ -87,7 +87,7 @@
 
 .checkoutContentDetailBlock h6 {
     font-size: 16px;
-    color: #E94165;
+    color: #17BEBB;
 }
 
 .checkoutContentDetailBlock span {
@@ -127,7 +127,7 @@
 }
 
 .TotalPrice {
-    color: #E94165;
+    color: #17BEBB;
     margin-top: 20px;
     font-size: 16px;
 }
@@ -139,7 +139,7 @@
 }
 
 .checkoutRightSectionPolicyContent p a {
-    color: #E94165;
+    color: #17BEBB;
     font-weight: 400;
 }
 
@@ -148,8 +148,8 @@
 }
 
 .payNowButton {
-    background-color: #E94165;
-    border-color: #E94165;
+    background-color: #17BEBB;
+    border-color: #17BEBB;
     width: 100%;
     max-width: 350px;
     height: 63px;
@@ -157,8 +157,8 @@
 }
 
 .payNowButton:hover {
-    background-color: #E94165;
-    border-color: #E94165;
+    background-color: #17BEBB;
+    border-color: #17BEBB;
 }
 
 @media screen and (max-width: 767px) {

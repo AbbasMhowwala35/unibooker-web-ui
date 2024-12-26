@@ -54,7 +54,7 @@
 }
 
 .authButton {
-  background: #E94165;
+  background: #17BEBB;
   color: white;
   border: none;
   border-radius: 12px;
@@ -75,11 +75,11 @@
 
 .authParaLoggedin,
 .authParaLoggedinLink {
-  color: #E94165;
+  color: #17BEBB;
 }
 
 .authLinks a {
-  color: #E94165;
+  color: #17BEBB;
   text-decoration: none;
 }
 
@@ -158,7 +158,7 @@
 .infoIcon svg {
   width: 40px;
   height: 40px;
-  color: #E94165;
+  color: #17BEBB;
 }
 
 @media screen and (max-width: 767px) {

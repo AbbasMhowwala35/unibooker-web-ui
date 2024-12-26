@@ -139,13 +139,7 @@ const index = () => {
                         <Col md={9} className='text-center'>
                             <div className={styles.cars_row}>
                                 {cars.map((car) => (
-                                    <Link
-                                        key={car.id}
-                                        href={{
-                                            pathname: `/cars/${car.id}`,
-                                            query: { car: JSON.stringify(car) }
-                                        }}
-                                    >
+                                     <Link key={car.id} href={`/cars/${car.id}`}>
                                         <CarCard
                                             id={car.id}
                                             name={car.name}

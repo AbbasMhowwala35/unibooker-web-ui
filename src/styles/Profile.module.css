@@ -12,6 +12,39 @@
     font-size: 16px;
 }
 
+.themeEditProfile {
+    color: #17BEBB;
+    text-transform: uppercase;
+    margin-left: 10px;
+    margin-top: 0 !important;
+}
+
+.ProfileContentDisplaySection {
+    color: #837F74;
+    max-width: 550px;
+    margin: 0 auto;
+}
+
+.ProfileImgSection {
+    text-align: center;
+}
+
+.ProfileImgSection h4 {
+    color: #000;
+    margin-bottom: 5px;
+    margin-top: 10px;
+
+}
+.profileImageDisplay {
+    width: 150px;
+    height: 150px;
+}
+
+.ProfileImgSection p {
+    color: #616161;
+    font-size: 14px;
+}
+
 .ProfileTabs h3 {
     font-size: 24px;
     margin: 30px 0;
@@ -34,7 +67,7 @@
 
 .ProfileTabsMain li button svg {
     width: 20px;
-    color: #E94165;
+    color: #17BEBB;
     height: 20px;
 }
 
@@ -357,7 +390,7 @@
 }
 
 .TicketInfo h4 {
-    color: #E94165;
+    color: #17BEBB;
     font-size: 18px;
     margin-bottom: 30px;
 }
@@ -388,7 +421,7 @@
 
 .ProfileCreateTicketFormButton {
     min-width: 300px;
-    background-color: #E94165 !important;
+    background-color: #17BEBB !important;
     height: 60px;
     color: #fff;
     border-radius: 12px;
@@ -399,7 +432,7 @@
 }
 
 .ProfileCreateTicket h4 a {
-    color: #E94165;
+    color: #17BEBB;
 }
 
 .ProfileCreateTicket p {
@@ -453,13 +486,12 @@
   
   .ChatBubbleLeft,
   .ChatBubbleRight {
-    max-width: 50%;
-    padding: 10px 15px;
+    max-width: max-content;
     border-radius: 20px;
     font-size: 14px;
     line-height: 1.4;
-    margin-bottom: 20px;
-    padding: 20px;
+    margin-bottom: 10px;
+    padding: 15px;
   }
   
   .ChatBubbleLeft {
@@ -469,18 +501,18 @@
   }
   
   .ChatBubbleRight {
-    background-color: #f8f9fa;
+    background-color: transparent;
     color: #343a40;
     align-self: flex-end;
     margin-left: auto;
+    border: 1px solid #ccc;
   }
   
   .ChatTimestamp {
     display: block;
     font-size: 12px;
     color: #adb5bd;
-    margin-top: 5px;
-    text-align: right;
+    margin-bottom: 10px;
   }
   
   /* Message Input Section */
@@ -490,6 +522,7 @@
     border-top: 1px solid #dee2e6;
     margin-top: 20px;
     padding-top: 10px;
+    position: relative;
   }
   
   .MessageInput {
@@ -500,6 +533,9 @@
     font-size: 14px;
     margin-right: 10px;
     outline: none;
+    height: 60px;
+    width: 100%;
+    position: relative;
   }
   
   .MessageInput:focus {
@@ -507,7 +543,7 @@
   }
   
   .SendMessageButton {
-    background-color: #007bff;
+    background-color: #3ebd93 !important;
     color: #fff;
     border: none;
     padding: 10px 15px;
@@ -516,6 +552,12 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    position: absolute;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px !important;
+    top: 0;
   }
   
   .SendMessageButton:hover {
@@ -527,5 +569,17 @@
     }
     .ProfileTabsMain {
         margin: 20px 0;
+    }
+    .ProfileViewCard, .ProfileViewCardRow {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    .ProfileTabsMain {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-y: scroll;
+    }
+    .ProfileTabsMain li button {
+        width: 180px;
     }
   }

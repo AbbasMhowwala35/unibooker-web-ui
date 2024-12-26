@@ -9,6 +9,7 @@ import wishlist from '../../Images/wishlist.svg'
 import location from '../../Images/location.svg'
 import { BsStarFill } from "react-icons/bs";
 import Link from "next/link";
+import { useRouter } from "next/router";
 // Define Jost font
 const jostFont = Jost({
     variable: "--font-jost",
@@ -16,6 +17,11 @@ const jostFont = Jost({
 });
 
 export default function Home() {
+    const router = useRouter();
+    
+    const handleRedirect = () => {
+        router.push('/customer-reciept');  
+    };
 
     return (
         <div className={`${styles.page} ${jostFont.variable}`}>
@@ -95,12 +101,12 @@ export default function Home() {
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                             <g clip-path="url(#clip0_1966_5371)">
                                                 <g clip-path="url(#clip1_1966_5371)">
-                                                    <path d="M8 6.13281H21" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M8 12.1328H21" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M8 18.1328H21" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M3 6.13281H3.01" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M3 12.1328H3.01" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M3 18.1328H3.01" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                    <path d="M8 6.13281H21" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                    <path d="M8 12.1328H21" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                    <path d="M8 18.1328H21" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                    <path d="M3 6.13281H3.01" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                    <path d="M3 12.1328H3.01" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                    <path d="M3 18.1328H3.01" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                                 </g>
                                             </g>
                                             <defs>
@@ -130,10 +136,10 @@ export default function Home() {
                                 <div className={styles.checkoutRightSectionPolicy}>
                                     <div className={styles.checkoutRightSectionPolicyBox}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
-                                            <path d="M4 9.13281H20" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M4 15.1328H20" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M10 3.13281L8 21.1328" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M16 3.13281L14 21.1328" stroke="#E94165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M4 9.13281H20" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M4 15.1328H20" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M10 3.13281L8 21.1328" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M16 3.13281L14 21.1328" stroke="#17BEBB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <p>Cancellation Policy</p>
                                     </div>
@@ -152,7 +158,7 @@ export default function Home() {
                                 </div>
                                 <div className={styles.checkoutRightSectionPolicyContent}>
                                     <p>By selecting the button below, I agree to the <Link href="/">Hosts&apos;s Rules</Link>,  <Link href="/">Ground rules for quest</Link>,  <Link href="/">UniBooker&apos;s Rebooking </Link>and  <Link href="/">Refund Policy </Link>and that UniBooker can  <Link href="/">charge my Payment </Link>method if I&apos;m responsible for damage. I agree to pay the total amount shown if the Host accepts my booking request.</p>
-                                    <Button type="button" className={styles.payNowButton}>Pay Now</Button>
+                                    <Button type="button" onClick={handleRedirect} className={styles.payNowButton}>Pay Now</Button>
                                 </div>
                             </div>
                         </Col>

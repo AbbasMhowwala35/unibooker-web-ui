@@ -39,8 +39,8 @@
 }
 
 .filter_section ul li input[type="checkbox"]:checked {
-  background-color: #E94165;
-  border-color: #E94165; 
+  background-color: #17BEBB;
+  border-color: #17BEBB; 
   color: #fff !important;
 }
 

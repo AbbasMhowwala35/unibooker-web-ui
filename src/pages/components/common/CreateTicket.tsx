@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import styles from "../../../styles/Profile.module.css";
 import Link from 'next/link';
+import { BsFillSendFill } from 'react-icons/bs';
 
 const CreateTicket = () => {
     const [isTicketCreated, setIsTicketCreated] = useState(false);
-
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsTicketCreated(true);
@@ -17,7 +17,11 @@ const CreateTicket = () => {
                     <h3>Create Ticket</h3>
                     <div className={styles.ProfileChildCardForm}>
                         <div className={styles.ProfileCreateTicket}>
-                            <h4>Accept the <Link href="/">Terms and Conditions</Link></h4>
+                        <h4>
+                            <input type="checkbox" className='checkInput' id="terms" />
+                            Accept the <Link href="/">Terms and Conditions</Link>
+                            </h4>
+
                             <hr />
                             <p>
                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
@@ -50,14 +54,18 @@ const CreateTicket = () => {
                         sunt in culpa qui officia deserunt mollit anim id est laborum.
                     </p>
                     <div className={styles.ChatSection}>
-                        <div className={styles.ChatBubbleLeft}>Hey there?<br /><span className={styles.ChatTimestamp}>11:59 am</span></div>
-                        <div className={styles.ChatBubbleLeft}>Ok come with carefully!<br />Remember the address please!<br /><span className={styles.ChatTimestamp}>11:59 am</span></div>
-                        <div className={styles.ChatBubbleRight}>On my way sir.<br />Will reach in 10 mins<br /><span className={styles.ChatTimestamp}>11:59 am</span></div>
-                        <div className={styles.ChatBubbleRight}>Btw, I want to know more about the room space and facilities & can I get some more picture of current.<br /><span className={styles.ChatTimestamp}>11:59 am</span></div>
+                        <div className={styles.ChatBubbleLeft}>Hey there?</div>
+                        <span className={`${styles.ChatTimestamp} text-start`}>11:59 am</span>
+                        <div className={styles.ChatBubbleLeft}>Ok come with carefully!<br />Remember the address please!</div>
+                        <span className={`${styles.ChatTimestamp} text-start`}>11:59 am</span>
+                        <div className={styles.ChatBubbleRight}>On my way sir.<br />Will reach in 10 mins</div>
+                        <span className={`${styles.ChatTimestamp} text-end`}>11:59 am</span>
+                        <div className={styles.ChatBubbleRight}>Btw, I want to know more about the room space and facilities & can I get some more picture of current.</div>
+                        <span className={`${styles.ChatTimestamp} text-end`}>11:59 am</span>
                     </div>
                     <div className={styles.MessageInputSection}>
                         <input type="text" className={styles.MessageInput} placeholder="Write a message..." />
-                        <button className={styles.SendMessageButton}><i className="bi bi-send"></i></button>
+                        <button className={styles.SendMessageButton}><BsFillSendFill /></button>
                     </div>
                 </div>
             )}

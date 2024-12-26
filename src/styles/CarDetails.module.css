@@ -132,3 +132,60 @@
     padding: revert;
   }
 }
+
+
+.checkoutRightSectionPolicy {
+  background-color: #F7F7F7;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  border-radius: 12px;
+  color: #17BEBB;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.checkoutRightSectionPolicyBox {
+  display: flex;
+  gap: 10px;
+}
+
+.checkoutRightSectionPolicyBox p {
+  margin-bottom: 0;
+}
+
+.PersonDetailBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #EDEDED;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  margin-top: 30px;
+}
+
+.personBox {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.personBox h4 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.personBox a {
+  color: #17BEBB;
+  font-size: 16px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.personBoxIcon svg {
+  width: 24px;
+  height: 24px;
+  fill: #17BEBB;
+}

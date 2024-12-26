@@ -3,6 +3,7 @@ import car from "../../../Images/car.png";
 import styles from "../../../styles/Profile.module.css";
 import Image from "next/image";
 import { BsStarFill } from "react-icons/bs";
+import { MdArrowBack, MdArrowForward } from "react-icons/md";
 
 const Booking = () => {
   const reviews = [
@@ -51,6 +52,19 @@ const Booking = () => {
   ];
 
   const [activeTab, setActiveTab] = useState("All Reviews");
+  const [currentPage, setCurrentPage] = useState(1);
+  const reviewsPerPage = 2; // You can change the number of reviews per page
+  const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const getCurrentPageReviews = () => {
+    const indexOfLastReview = currentPage * reviewsPerPage;
+    const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+    return reviews.slice(indexOfFirstReview, indexOfLastReview);
+  };
 
   return (
     <div className={styles.ProfileChildCard}>
@@ -59,15 +73,13 @@ const Booking = () => {
         <div className={styles.Tabs}>
           <div className={styles.TabsList}>
             <button
-              className={`${styles.TabButton} ${activeTab === "All Reviews" ? styles.ActiveTab : ""
-                }`}
+              className={`${styles.TabButton} ${activeTab === "All Reviews" ? styles.ActiveTab : ""}`}
               onClick={() => setActiveTab("All Reviews")}
             >
               All Reviews
             </button>
             <button
-              className={`${styles.TabButton} ${activeTab === "previous" ? styles.ActiveTab : ""
-                }`}
+              className={`${styles.TabButton} ${activeTab === "previous" ? styles.ActiveTab : ""}`}
               onClick={() => setActiveTab("previous")}
             >
               Reviews By Me
@@ -75,7 +87,7 @@ const Booking = () => {
           </div>
         </div>
         <div className={styles.ReviewsGrid}>
-          {reviews.map((review) => (
+          {getCurrentPageReviews().map((review) => (
             <div key={review.id} className={styles.ReviewCard}>
               <div className={styles.ReviewCardHeader}>
                 <div className={styles.ReviewCardHeaderAvtar}>
@@ -100,6 +112,26 @@ const Booking = () => {
               </div>
             </div>
           ))}
+        </div>
+        <div className="Pagination">
+          <button
+            className="PageButton"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <MdArrowBack />
+          </button>
+          <div className="d-flex gap-3">
+            <span className="PageInfo active">{currentPage}</span>
+            <span className="PageInfo">{totalPages}</span>
+          </div>
+          <button
+            className="PageButton"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <MdArrowForward />
+          </button>
         </div>
       </div>
     </div>

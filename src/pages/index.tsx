@@ -23,6 +23,8 @@ import person1 from '../Images/person1.jpg'
 import Link from "next/link";
 import Newsletter from "./components/common/Newsletter";
 import CarCard from "./components/common/CarCard";
+import { BsShieldFillCheck } from "react-icons/bs";
+import Popularlocations from './components/common/PopularLocations'
 // Define Jost font
 const jostFont = Jost({
   variable: "--font-jost",
@@ -45,12 +47,23 @@ export default function Home() {
     },
   ];
 
+  const locations = [
+    { name: 'Location 1', image: location1 },
+    { name: 'Location 2', image: location2 },
+    { name: 'Location 3', image: location3 },
+    { name: 'Location 4', image: location4 },
+  ];
+
   const sliderSettings = {
     dots: false,
     infinite: true,
     speed: 500,
-    slidesToShow: 4,
+    slidesToShow: 5,
     slidesToScroll: 1,
+    margin: 30,
+    arrows: true,
+    prevArrow: <div className="prev-arrow">Prev</div>,
+    nextArrow: <div className="next-arrow">Next</div>,
     responsive: [
       {
         breakpoint: 1024,
@@ -121,66 +134,114 @@ export default function Home() {
         {/* Hero Section */}
         <div className={styles.hero_bg}>
           <Container>
-            <Row className="align-items-center">
-              <Col md={12} lg={6} xl={6}>
-                <h1>Easy and Convenient Way of Car Booking in <span>UniBooker</span></h1>
-                <p>Vestibulum ultricies aliquam convallis. Maecenas ut tellus mi. Proin tincidunt, lectus eu volutpat.</p>
-              </Col>
-              <Col md={12} lg={6} xl={6}>
+            <Row>
+              <Col md={12}>
                 <Card className={styles.search_box}>
                   <Card.Body>
                     <form>
-                      <div className="form-inputs mb-3">
-                        <label htmlFor="location">Location</label>
-                        <select id="location" className="form-control">
-                          <option value="">Select a Location</option>
-                          <option value="new-york">New York</option>
-                          <option value="los-angeles">Los Angeles</option>
-                          <option value="chicago">Chicago</option>
-                          <option value="houston">Houston</option>
-                          <option value="miami">Miami</option>
-                        </select>
-                      </div>
-                      <div className="form-inputs mb-3">
-                        <label htmlFor="date">Date</label>
-                        <input id="date" type="date" className="form-control" />
-                      </div>
-                      <div className="form-inputs mb-3">
-                        <label htmlFor="time">Time</label>
-                        <input id="time" type="time" className="form-control" />
-                      </div>
-                      <Button className={styles.theme_btn} type="submit">
-                        Search
-                      </Button>
+                      <Row>
+                        <Col md={2}>
+                          <div className="form-inputs mb-3">
+                            <label htmlFor="city">City</label>
+                            <select id="city" className="form-control">
+                              <option value="bangalore">Bangalore</option>
+                              <option value="mumbai">Mumbai</option>
+                              <option value="delhi">Delhi</option>
+                              <option value="pune">Pune</option>
+                              <option value="chennai">Chennai</option>
+                            </select>
+                          </div>
+                        </Col>
+                        <Col md={4}>
+                          <div className="form-inputs mb-3">
+                            <label htmlFor="location">Location</label>
+                            <input
+                              id="location"
+                              type="text"
+                              className="form-control"
+                              placeholder="Enter a location"
+                            />
+                          </div>
+                        </Col>
+                        <Col md={2}>
+                          <div className="form-inputs mb-3">
+                            <label htmlFor="startDate">Trip Starts</label>
+                            <input id="startDate" type="datetime-local" className="form-control" />
+                          </div>
+                        </Col>
+                        <Col md={2}>
+                          <div className="form-inputs mb-3">
+                            <label htmlFor="endDate">Trip Ends</label>
+                            <input id="endDate" type="datetime-local" className="form-control" />
+                          </div>
+                        </Col>
+                        <Col md={2}>
+                          <Button className={styles.theme_btn} type="submit">
+                            Search Car
+                          </Button>
+                        </Col>
+                      </Row>
                     </form>
                   </Card.Body>
                 </Card>
               </Col>
+              <Col md={12} lg={6} xl={6} className="mt-5">
+                <h1>Easy and Convenient Way of Car Booking in <span>UniBooker</span></h1>
+                <p>Vestibulum ultricies aliquam convallis. Maecenas ut tellus mi. Proin tincidunt, lectus eu volutpat.</p>
+              </Col>
             </Row>
+            <div className={styles.carouselValue}>
+              <div className={styles.carouselValueContainer}>
+                <div className={styles.carouselValueSection}>
+                  <div className={styles.carouselValueSectionIcon}>
+                    <BsShieldFillCheck />
+                  </div>
+                  <div className={styles.carouselValueSectionContent}>
+                    <h4>100%</h4>
+                    <p>Hassle-free Secured Trip</p>
+                  </div>
+                </div>
+                <div className={styles.carouselValueSection}>
+                  <div className={styles.carouselValueSectionIcon}>
+                    <BsShieldFillCheck />
+                  </div>
+                  <div className={styles.carouselValueSectionContent}>
+                    <h4>25000+</h4>
+                    <p>Quality cars available</p>
+                  </div>
+                </div>
+                <div className={styles.carouselValueSection}>
+                  <div className={styles.carouselValueSectionIcon}>
+                    <BsShieldFillCheck />
+                  </div>
+                  <div className={styles.carouselValueSectionContent}>
+                    <h4>Delivery</h4>
+                    <p>Anywhere, Anytime</p>
+                  </div>
+                </div>
+                <div className={styles.carouselValueSection}>
+                  <div className={styles.carouselValueSectionIcon}>
+                    <BsShieldFillCheck />
+                  </div>
+                  <div className={styles.carouselValueSectionContent}>
+                    <h4>Endless</h4>
+                    <p>Drives, pay by hour</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </Container>
         </div>
         <main className={`${styles.main} container`}>
           {/* Popular Locations Section */}
           <section className={styles.popular_locations}>
             <h2 className={styles.main_heading}>Popular Locations</h2>
-            <Slider className={styles.location_slider} {...sliderSettings}>
-              <div className={styles.location_card}>
-                <Image src={location1} alt="Location 1" />
-                <h3>Location 1</h3>
-              </div>
-              <div className={styles.location_card}>
-                <Image src={location2} alt="Location 2" />
-                <h3>Location 2</h3>
-              </div>
-              <div className={styles.location_card}>
-                <Image src={location3} alt="Location 2" />
-                <h3>Location 2</h3>
-              </div>
-              <div className={styles.location_card}>
-                <Image src={location4} alt="Location 2" />
-                <h3>Location 2</h3>
-              </div>
-            </Slider>
+            <Popularlocations
+              locations={locations}
+              sliderSettings={sliderSettings}
+              exploreLink="/locations"
+              variant="slider" // GRID FOR GRIDS
+            />
             <Link className={styles.btn_link} href="/">Explore All</Link>
           </section>
           {/* Company Logos Section */}
@@ -189,7 +250,7 @@ export default function Home() {
               {/* {companyLogos.map((logo, index) => (
               <Col md={2} key={index}>
                 <div className={styles.company_logos_div}>
-                  <Image src={logo.src} alt={logo.alt} width={150} height={150} layout="intrinsic" />
+                  <Image className={styles.locationImg} src={logo.src} alt={logo.alt} width={150} height={150} layout="intrinsic" />
                 </div>
               </Col>
             ))} */}
@@ -225,23 +286,17 @@ export default function Home() {
             <h2 className={styles.main_heading}>Most Viewed Cars</h2>
             <div className={styles.cars_row}>
               {cars.map((car) => (
-                <Link
-                  key={car.id}
-                  href={{
-                  pathname: `/cars/${car.id}`,
-                  query: { car: JSON.stringify(car) }
-                }}
-                >
-                <CarCard
-                  id={car.id}
-                  name={car.name}
-                  rating={car.rating}
-                  reviews={car.reviews}
-                  location={car.location}
-                  price={car.price}
-                  distance={car.distance}
-                  wishlist={car.wishlist}
-                />
+                <Link key={car.id} href={`/cars/${car.id}`}>
+                  <CarCard
+                    id={car.id}
+                    name={car.name}
+                    rating={car.rating}
+                    reviews={car.reviews}
+                    location={car.location}
+                    price={car.price}
+                    distance={car.distance}
+                    wishlist={car.wishlist}
+                  />
                 </Link>
               ))}
             </div>
@@ -291,7 +346,7 @@ export default function Home() {
                     pathname: `/cars/${car.id}`,
                     query: { car: JSON.stringify(car) }
                   }}
-                  >
+                >
                   <CarCard
                     id={car.id}
                     name={car.name}

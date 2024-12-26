@@ -1,10 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
 
-body {
-  font-family: "Jost", sans-serif;
+:root,
+#__next {
+  --font-jost: 'Jost', sans-serif;
 }
 
-/* Shimmer Effect Styles */
+body {
+  font-family: var(--font-jost) !important;
+}
+
 .shimmer-wrapper {
   display: flex;
   flex-direction: column;
@@ -15,13 +19,11 @@ body {
 }
 
 .shimmer-block {
-  background: linear-gradient(
-    to right,
-    #e0e0e0 0%,
-    #f2f2f2 20%,
-    #e0e0e0 40%,
-    #e0e0e0 100%
-  );
+  background: linear-gradient(to right,
+      #e0e0e0 0%,
+      #f2f2f2 20%,
+      #e0e0e0 40%,
+      #e0e0e0 100%);
   background-size: 1200px 100%;
   animation: shimmer 1.5s infinite linear;
   border-radius: 4px;
@@ -31,6 +33,7 @@ body {
   0% {
     background-position: -1200px 0;
   }
+
   100% {
     background-position: 1200px 0;
   }
@@ -42,10 +45,96 @@ label {
   font-size: 16px;
 }
 
-.theme_btn
-{
-  background-color: #17BEBB;
+.theme_btn {
+  background-color: #17BEBB !important;
   color: #fff;
   height: 60px;
   display: block;
+  padding: 10px 50px !important;
+  border-radius: 12px !important;
+  border: none !important;
+}
+
+.slick-prev:before,
+.slick-next:before {
+  color: #17BEBB !important;
+}
+
+.slick-prev,
+.slick-next {
+  background-color: transparent;
+  border: none;
+  font-size: 30px;
+  color: #17BEBB !important;
+}
+
+.Pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+  gap: 20px;
+}
+
+.PageButton {
+  background-color: transparent !important;
+  color: #ff4081;
+  border: 1px solid #ff4081 !important;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  align-items: center;
+  display: flex;
+  margin-top: 0 !important;
+}
+
+.PageButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.PageInfo {
+  font-size: 16px;
+}
+
+span.PageInfo.active {
+  font-size: 16px;
+  border: 1px solid #ff4081;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  text-align: center;
+  color: #ff4081;
+}
+
+.PageButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.checkInput {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+.react-calendar.react-calendar--selectRange {
+  width: 100% !important;
+}
+
+.customFormcontrol {
+  background-color: transparent !important;
+  border: 1px solid #f7f7f7 !important;
+  height: 50px;
+}
+
+.input-group {
+  height: 50px;
+  background: #f7f7f7;
+  justify-content: flex-end;
+}
+
+span.input-group-text {
+  border: none;
 }
