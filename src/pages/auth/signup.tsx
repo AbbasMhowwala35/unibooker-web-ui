@@ -13,6 +13,7 @@ const jostFont = Jost({
   subsets: ["latin"],
 });
 
+
 const Signup = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [agree, setAgree] = useState(false); 
