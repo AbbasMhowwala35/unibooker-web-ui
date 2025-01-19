@@ -1,35 +1,105 @@
+import { Container, Row, Col, Card, Button } from "react-bootstrap";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import { Jost } from "next/font/google";
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import styles from "@/styles/Home.module.css";
-import location1 from '../Images/locations/1.png'
-import location2 from '../Images/locations/2.png'
-import location3 from '../Images/locations/3.png'
-import location4 from '../Images/locations/4.png'
-import company1 from '../Images/company/1.png'
-import company2 from '../Images/company/2.png'
-import company3 from '../Images/company/3.png'
-import company4 from '../Images/company/4.png'
-import company5 from '../Images/company/5.png'
 import d1 from '../Images/d1.svg'
 import d2 from '../Images/d2.svg'
 import d3 from '../Images/d3.svg'
 import testimonial from '../Images/testimonial.png'
 import person1 from '../Images/person1.jpg'
-import Link from "next/link";
 import Newsletter from "./components/common/Newsletter";
-import CarCard from "./components/common/CarCard";
 import { BsShieldFillCheck } from "react-icons/bs";
+import CarCard from "./components/common/CarCard";
+import Loader from "./components/common/Loader";
 import Popularlocations from './components/common/PopularLocations'
-// Define Jost font
+import api from "./api/api";
+import Slider from "react-slick";
+import styles from "@/styles/Home.module.css";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import Link from "next/link";
+import { useRouter } from "next/router";
+interface MostViewedItem {
+  id: string;
+  name: string;
+  item_rating: number;
+  address: string;
+  state_region: string;
+  city: string;
+  zip_postal_code: string;
+  price: string;
+  latitude: string;
+  longitude: string;
+  status: string;
+  item_type_id: string;
+  image: string;
+  item_info: string;
+  is_verified: string;
+  is_featured: string;
+  booking_policies_id: number;
+  weekly_discount: string;
+  weekly_discount_type: string;
+  monthly_discount: string;
+  monthly_discount_type: string;
+  doorStep_price: string | null;
+  cancellation_reason_title: string;
+  cancellation_reason_description: string[];
+  features_data: {
+    id: number;
+    name: string;
+    image_url: string | null;
+  }[];
+  host_id: string;
+  host_first_name: string;
+  host_last_name: string;
+  host_email: string;
+  host_phone: string;
+  host_player_id: string;
+  host_profile_image: string;
+  gallery_image_urls: string[];
+  review_data: {
+    id: number;
+    booking_id: string;
+    guest_id: string;
+    guest_name: string;
+    guest_profile_image: string | null;
+    rating: string;
+    message: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+  total_reviews: number;
+  is_in_wishlist: boolean;
+  item_type: string;
+}
+interface HomeData {
+  locations: {
+    city_name: string;
+    image: string;
+  }[];
+  makes: {
+    id: string;
+    imageURL: string;
+    name: string
+  }[];
+  most_viewed_items: MostViewedItem[]
+  featured_items: MostViewedItem[]
+  testimonials: {
+    name: string;
+    message: string;
+  }[];
+  popularCompanies: {
+    name: string;
+    logo: string;
+  }[];
+}
+
 const jostFont = Jost({
   variable: "--font-jost",
   subsets: ["latin"],
 });
+
 const sliderSettings = {
   dots: false,
   infinite: true,
@@ -63,7 +133,7 @@ const sliderSettings = {
       },
     },
   ],
-};  
+};
 
 const settings = {
   dots: false,
@@ -75,37 +145,55 @@ const settings = {
   prevArrow: <button className={styles.prevArrow}>Prev</button>,
 };
 
-const locations = [
-  { name: 'Location 1', image: location1 },
-  { name: 'Location 2', image: location2 },
-  { name: 'Location 3', image: location3 },
-  { name: 'Location 4', image: location4 },
-];
-
-const cars = [
-  {
-    id: "1",
-    name: "Tesla",
-    rating: 5,
-    reviews: 242,
-    location: "Wilora NT 0872, Australia",
-    price: "$165,3",
-    distance: "12 km",
-    wishlist: "/static/wishlist.png",
-  },
-  {
-    id: "2",
-    name: "BMW",
-    rating: 4.5,
-    reviews: 128,
-    location: undefined,
-    price: "$120,0",
-    distance: "8 km",
-    wishlist: undefined,
-  },
-];
-
 export default function Home() {
+  const router = useRouter();
+  const [homeData, setHomeData] = useState<HomeData | null>(null);
+  const [locationClicked, setLocationClicked] = useState<string | undefined>(undefined); // eslint-disable-line
+  const [brandClicked, setBrandClicked] = useState<string | undefined>(undefined); // eslint-disable-line
+  const [loading, setLoading] = useState(true);
+  
+
+  useEffect(() => {
+    const userData = localStorage.getItem("userData");
+    const parsedUserData = userData ? JSON.parse(userData) : null;
+    const token = parsedUserData?.token || "";
+    if (token) {
+      const fetchData = async () => {
+        try {
+          const response = await api.get("/homeData", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setHomeData(response.data.data);
+          setLoading(false);
+        } catch (error) {
+          console.error("Error fetching home data:", error);
+          setLoading(false);
+        }
+      };
+      fetchData();
+    }
+  }, []);
+
+  const handleLocationClick = (cityName: string) => {
+    setLocationClicked(cityName)
+    sessionStorage.setItem("selectedCity", cityName);
+    router.push('/car-list')
+  };
+
+  const handleBrandClick = async (brandName: string) => {
+    setBrandClicked(brandName);
+    sessionStorage.setItem("selectedBrand", brandName);
+    router.push('/car-list');
+  };  
+
+  const saveSelectedCar = (car: MostViewedItem) => {
+    sessionStorage.setItem("selectedCar", JSON.stringify(car));
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
+
   const testimonials = [
     {
       name: 'John Doe',
@@ -143,11 +231,11 @@ export default function Home() {
                           <div className="form-inputs mb-3">
                             <label htmlFor="city">City</label>
                             <select id="city" className="form-control">
-                              <option value="bangalore">Bangalore</option>
-                              <option value="mumbai">Mumbai</option>
-                              <option value="delhi">Delhi</option>
-                              <option value="pune">Pune</option>
-                              <option value="chennai">Chennai</option>
+                              {homeData?.locations.map((location, index) => (
+                                <option key={index} value={location.city_name}>
+                                  {location.city_name}
+                                </option>
+                              ))}
                             </select>
                           </div>
                         </Col>
@@ -232,70 +320,55 @@ export default function Home() {
           </Container>
         </div>
         <main className={`${styles.main} container`}>
-          {/* Popular Locations Section */}
           <section className={styles.popular_locations}>
             <h2 className={styles.main_heading}>Popular Locations</h2>
             <Popularlocations
-              locations={locations}
+              locations={homeData?.locations}
               sliderSettings={sliderSettings}
-              variant="slider" // GRID FOR GRIDS
+              onLocationClick={handleLocationClick}
+              variant="slider"
             />
             <Link className={styles.btn_link} href="/">Explore All</Link>
           </section>
-          {/* Company Logos Section */}
           <section className={styles.company_logos}>
             <div className={styles.company_logos_row}>
-              {/* {companyLogos.map((logo, index) => (
-              <Col md={2} key={index}>
-                <div className={styles.company_logos_div}>
-                  <Image className={styles.locationImg} src={logo.src} alt={logo.alt} width={150} height={150} layout="intrinsic" />
+              {homeData?.makes.map((make) => (
+                <div key={make.id}>
+                  <div className={styles.company_logos_div}  onClick={() => handleBrandClick(make.name)} style={{ cursor: "pointer" }}>
+                    <Image
+                      src={make.imageURL}
+                      alt={make.name}
+                      width={100}
+                      height={100}
+                      layout="intrinsic"
+                    />
+                  </div>
                 </div>
-              </Col>
-            ))} */}
-              <div>
-                <div className={styles.company_logos_div}>
-                  <Image src={company1} alt="Company" />
-                </div>
-              </div>
-              <div>
-                <div className={styles.company_logos_div}>
-                  <Image src={company2} alt="Company" />
-                </div>
-              </div>
-              <div>
-                <div className={styles.company_logos_div}>
-                  <Image src={company3} alt="Company" />
-                </div>
-              </div>
-              <div>
-                <div className={styles.company_logos_div}>
-                  <Image src={company4} alt="Company" />
-                </div>
-              </div>
-              <div>
-                <div className={styles.company_logos_div}>
-                  <Image src={company5} alt="Company" />
-                </div>
-              </div>
+              ))}
             </div>
           </section>
           {/* Most Viewed Cars Section */}
           <section className={styles.most_viewed_cars}>
             <h2 className={styles.main_heading}>Most Viewed Cars</h2>
             <div className={styles.cars_row}>
-              {cars.map((car) => (
-                <Link key={car.id} href={`/cars/${car.id}`}>
+              {homeData?.most_viewed_items.map((car: MostViewedItem, index) => (
+                <div
+                  key={index}
+                  onClick={() => saveSelectedCar(car)}
+                >
                   <CarCard
                     id={car.id}
+                    image={car.image}
                     name={car.name}
-                    rating={car.rating}
-                    reviews={car.reviews}
-                    location={car.location}
+                    item_rating={car.item_rating}
+                    rating={car.item_rating}
+                    location={car.address}
                     price={car.price}
-                    distance={car.distance}
-                    wishlist={car.wishlist}
+                    is_in_wishlist={car.is_in_wishlist}
+                    item_info={car.item_info}
+                    saveSelectedCar={saveSelectedCar}
                   />
-                </Link>
+                </div>
               ))}
             </div>
             <Link className={styles.btn_link} href="/">Explore All</Link>
@@ -337,25 +410,24 @@ export default function Home() {
           <section className={styles.recommended_cars}>
             <h2 className={styles.main_heading}>Recommended Cars</h2>
             <div className={styles.cars_row}>
-              {cars.map((car) => (
-                <Link
-                  key={car.id}
-                  href={{
-                    pathname: `/cars/${car.id}`,
-                    query: { car: JSON.stringify(car) }
-                  }}
+              {homeData?.featured_items.map((car: MostViewedItem, index) => (
+                <div
+                  key={index}
+                  onClick={() => saveSelectedCar(car)}
                 >
                   <CarCard
                     id={car.id}
+                    image={car.image}
                     name={car.name}
-                    rating={car.rating}
-                    reviews={car.reviews}
-                    location={car.location}
+                    item_rating={car.item_rating}
+                    rating={car.item_rating}
+                    location={car.address}
                     price={car.price}
-                    distance={car.distance}
-                    wishlist={car.wishlist}
+                    is_in_wishlist={car.is_in_wishlist}
+                    item_info={car.item_info}
+                    saveSelectedCar={saveSelectedCar}
                   />
-                </Link>
+                </div>
               ))}
             </div>
           </section>

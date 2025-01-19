@@ -69,6 +69,16 @@
   margin-bottom: 30px;
 }
 
+.resendButton {
+  background: transparent;
+  border: none;
+  display: block;
+  margin: 20px 0;
+  text-align: center;
+  width: 100%;
+  color: #17BEBB;
+}
+
 .authButton:hover {
   background: #6a11cb;
 }
@@ -103,6 +113,7 @@
   left: 20px;
   top: 50%;
   transform: translateY(-50%);
+  z-index: 1;
 }
 
 .eyeIcon {

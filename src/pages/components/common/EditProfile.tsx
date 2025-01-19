@@ -1,30 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from "../../../styles/Profile.module.css";
-import person from '../../../Images/person1.jpg'
+import person from '../../../Images/person1.jpg';
 import Image from 'next/image';
+
 interface Profile {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
-  birthDate: string;
+  birthdate: string;
   aboutYourself: string;
   profileImage: string;
 }
 
-const initialProfile: Profile = {
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'john.doe@example.com',
-  phone: '+1234567890',
-  birthDate: '1990-01-01',
-  aboutYourself: 'Lorem ipsum dolor sit amet.',
-  profileImage: '/path/to/profile/image.jpg',
-};
-
 const EditProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState<Profile>(initialProfile);
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const storedData = localStorage.getItem("userData"); 
+    if (storedData) {
+      setProfile(JSON.parse(storedData));
+    } 
+  }, []);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -33,14 +31,25 @@ const EditProfile = () => {
   const handleSaveChanges = (e: React.FormEvent) => {
     e.preventDefault();
     setIsEditing(false);
-    alert("Profile updated successfully!");
+    if (profile) {
+      localStorage.setItem("userProfile", JSON.stringify(profile));
+      alert("Profile updated successfully!");
+    }
   };
+
+  if (!profile) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div className={styles.ProfileChildCard}>
-      <div className='d-flex align-items-center'>
+      <div className="d-flex align-items-center">
         <h3>{isEditing ? 'Edit Profile' : 'Personal Profile'}</h3>
-        {isEditing ? "" : <button onClick={handleEditClick} className={styles.themeEditProfile}>Edit</button>}
+        {!isEditing && (
+          <button onClick={handleEditClick} className={styles.themeEditProfile}>
+            Edit
+          </button>
+        )}
       </div>
       {isEditing ? (
         <form className={styles.ProfileChildCardForm} onSubmit={handleSaveChanges}>
@@ -51,9 +60,8 @@ const EditProfile = () => {
                 type="text"
                 id="firstName"
                 className="form-control"
-                placeholder="Enter your first name"
-                value={profile.firstName}
-                onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
+                value={profile.first_name}
+                onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
               />
             </div>
             <div className="col-md-6 mb-4">
@@ -62,9 +70,8 @@ const EditProfile = () => {
                 type="text"
                 id="lastName"
                 className="form-control"
-                placeholder="Enter your last name"
-                value={profile.lastName}
-                onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
+                value={profile.last_name}
+                onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
               />
             </div>
           </div>
@@ -75,7 +82,6 @@ const EditProfile = () => {
                 type="email"
                 id="email"
                 className="form-control"
-                placeholder="Enter your email"
                 value={profile.email}
                 onChange={(e) => setProfile({ ...profile, email: e.target.value })}
               />
@@ -86,7 +92,6 @@ const EditProfile = () => {
                 type="text"
                 id="phone"
                 className="form-control"
-                placeholder="Enter your phone number"
                 value={profile.phone}
                 onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
               />
@@ -99,8 +104,8 @@ const EditProfile = () => {
                 type="date"
                 id="birthDate"
                 className="form-control"
-                value={profile.birthDate}
-                onChange={(e) => setProfile({ ...profile, birthDate: e.target.value })}
+                value={profile.birthdate}
+                onChange={(e) => setProfile({ ...profile, birthdate: e.target.value })}
               />
             </div>
           </div>
@@ -110,7 +115,6 @@ const EditProfile = () => {
               <textarea
                 id="aboutYourself"
                 className="form-control"
-                placeholder="Tell us about yourself"
                 rows={8}
                 value={profile.aboutYourself}
                 onChange={(e) => setProfile({ ...profile, aboutYourself: e.target.value })}
@@ -123,26 +127,21 @@ const EditProfile = () => {
         <div className={`${styles.ProfileChildCardForm} ${styles.ProfileViewCard} d-flex justify-content-between gap-5`}>
           <div className={styles.ProfileImgSection}>
             <Image src={person} alt="Profile" className={styles.profileImageDisplay} />
-            <h4>Sana Ullah</h4>
-            <p>Form Inivory coast</p>
+            <h4>{`${profile.first_name} ${profile.last_name}`}</h4>
+            <p>{profile.aboutYourself}</p>
           </div>
           <div className={styles.ProfileContentDisplaySection}>
-            <div className={`${styles.ProfileViewCardRow} d-flex gap-5 mb-3 justify-content-between`}>
-              <p><strong>First Name:</strong> {profile.firstName}</p>
-              <p><strong>Last Name:</strong> {profile.lastName}</p>
+            <div className="d-flex gap-5 mb-3 justify-content-between">
+              <p><strong>First Name:</strong> {profile.first_name}</p>
+              <p><strong>Last Name:</strong> {profile.last_name}</p>
             </div>
-            <div className={`${styles.ProfileViewCardRow} d-flex gap-5 mb-3 justify-content-between`}>
+            <div className="d-flex gap-5 mb-3 justify-content-between">
               <p><strong>Email:</strong> {profile.email}</p>
               <p><strong>Phone:</strong> {profile.phone}</p>
             </div>
-            <div className={`${styles.ProfileViewCardRow} d-flex gap-5 mb-3 justify-content-between`}>
-              <p><strong>Birth Date:</strong> {profile.birthDate}</p>
-              <p><strong>About You:</strong> {profile.aboutYourself}</p>
-            </div>
-            <div className='mt-5'>
-              <h6>About Yourself</h6>
-              <p>A common man typically leads an ordinary life, focusing on work, family, and daily activities. He might have dreams and aspirations like anyone else, and faces challenges and successes throughout life. Usually adaptable, resilient, and hardworking, a common man contributes to society in various roles, embodying the majority&apos;s experiences and values. He represents the typical person, with all the complexities and simplicities of daily existence. Amidst the myriad of roles, he may be a silent hero, an unsung bearer of society&apos;s pillars, often overlooked yet integral. His story is woven into the fabric of everyday life, echoing the collective narrative of humanity.</p>
-            </div>
+            {profile.birthdate && (<div className="d-flex gap-5 mb-3 justify-content-between">
+              <p><strong>Birth Date:</strong> {profile.birthdate}</p>
+            </div>)}
           </div>
         </div>
       )}

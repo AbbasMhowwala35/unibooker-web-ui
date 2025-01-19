@@ -1,20 +1,57 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from "../../styles/CarDetails.module.css";
-import { Button, Col, Container, Row } from 'react-bootstrap';
+import { Button, Col, Container, Modal, Row } from 'react-bootstrap';
 import { Jost } from 'next/font/google';
-import { BsFillSendFill, BsStarFill } from 'react-icons/bs';
-import image from '../../Images/image.jpg';
-import image2 from '../../Images/image2.png';
+import { BsFillSendFill, BsStarFill } from 'react-icons/bs'
 import Image from 'next/image';
 import Link from 'next/link';
 import Zoom from 'react-medium-image-zoom';
-import 'react-medium-image-zoom/dist/styles.css'; 
-import person from '../../Images/person1.jpg'
+import 'react-medium-image-zoom/dist/styles.css';
 import Newsletter from '../components/common/Newsletter';
-interface ImageType {
-    src: string;
-    alt: string;
+import api from '../api/api';
+import Loader from '../components/common/Loader';
+
+interface Feature {
+    id: string | number;
+    name: string;
+}
+interface Profile {
+    token: string;
+    id: string;
+    name: string;
+    email: string;
+}
+interface Car {
+    id: string;
+    name: string;
+    item_rating: number;
+    latitude: number;
+    longitude: number;
+    image: string;
+    item_type: string;
+    address: string;
+    reviews: number;
+    location?: string;
+    price: string;
+    distance: string;
+    wishlist?: string;
+    item_info: {
+        host_id: string;
+        host_profile_image: string;
+        host_first_name: string;
+        host_last_name: string;
+        odometer: string;
+        year: string;
+        transmission: string;
+        vehicleType: string;
+        description: string;
+        features_data: Feature[];
+        rules: string[];
+        cancellation_reason_title: string,
+        cancellation_reason_description: string[];
+        gallery_image_urls: string[];
+    };
 }
 
 const jostFont = Jost({
@@ -24,47 +61,101 @@ const jostFont = Jost({
 
 const CarDetails = () => {
     const router = useRouter();
-    const { id } = router.query;
-    const [selectedImage, setSelectedImage] = useState<ImageType>({ src: image.src, alt: 'Default Car Image' });
+    const [carDetails, setCarDetails] = useState<Car | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string>("");
+    const [showRulesModal, setShowRulesModal] = useState(false);
+    const [showCancellationModal, setShowCancellationModal] = useState(false);
+    const [profile, setProfile] = useState<Profile | null>(null);
 
-    const cars = [
-        {
-            id: "1",
-            name: "Tesla",
-            rating: 5.0,
-            reviews: 242,
-            location: "Wilora NT 0872, Australia",
-            price: "$165,3",
-            distance: "12 km",
-            wishlist: "/static/wishlist.png",
-        },
-        {
-            id: "2",
-            name: "BMW",
-            rating: 4.5,
-            reviews: 128,
-            location: undefined,
-            price: "$120,0",
-            distance: "8 km",
-            wishlist: undefined,
-        },
-    ];
-    const handleRedirect = () => {
-        router.push('/check-availability');
+    useEffect(() => {
+        const storedData = localStorage.getItem('userData');
+        if (storedData) {
+            setProfile(JSON.parse(storedData));
+        }
+    }, []);
+
+    const handleRedirect = async () => {
+        try {
+            const response = await api.get('/getItemDates', {
+                params: {
+                    item_id: carDetails?.id,
+                    token: profile?.token,
+                },
+            });
+            const { ItemDates } = response.data.data;
+            router.push('/check-availability');
+            sessionStorage.setItem("availability", JSON.stringify(ItemDates))
+            sessionStorage.setItem("itemId", carDetails?.id || "");
+        } catch (error) {
+            console.error('Error fetching availability data', error);
+        }
     };
-    const car = cars.find((car) => car.id === id);
 
-    if (!car) {
-        return <p>Car not found</p>;
-    }
-    const images: ImageType[] = [
-        { src: image.src, alt: 'Car Image 1' },
-        { src: image2.src, alt: 'Car Image 2' }
-    ];
+    const handleClose = () => {
+        setShowRulesModal(false);
+        setShowCancellationModal(false);
+    };
 
-    const handleThumbnailClick = (image: ImageType) => {
+    const handleShowRules = () => setShowRulesModal(true);
+    const handleShowCancellation = () => setShowCancellationModal(true);
+
+    const handleThumbnailClick = (image: string) => {
         setSelectedImage(image);
     };
+
+    useEffect(() => {
+        const storedCar = sessionStorage.getItem("selectedCar");
+        if (storedCar) {
+            const parsedCar = JSON.parse(storedCar);
+            setCarDetails({
+                ...parsedCar,
+                item_info: JSON.parse(parsedCar.item_info),
+            });
+            if (parsedCar.image) {
+                setSelectedImage(parsedCar.image);
+            }
+        }
+    }, []);
+
+    const handleViewProfile = async () => {
+        if (!profile) {
+            console.error("User profile not available in local storage.");
+            return;
+        }
+        try {
+            const userProfileResponse = await api.get('/getUserProfile', {
+                params: {
+                    userid: carDetails?.item_info.host_id,
+                    token: profile.token,
+                },
+            });
+            const userProfile = userProfileResponse.data.data;
+            const vendorReviewsResponse = await api.get('/getVendorItemReviews', {
+                params: {
+                    userid: carDetails?.item_info.host_id,
+                    token: profile.token,
+                },
+            });
+            const vendorReviews = vendorReviewsResponse.data.data;
+            const userItemsResponse = await api.get('/getUseritems', {
+                params: {
+                    userid: carDetails?.item_info.host_id,
+                    token: profile.token,
+                },
+            });
+            const userItems = userItemsResponse.data.data;
+            sessionStorage.setItem("userProfile", JSON.stringify(userProfile));
+            sessionStorage.setItem("vendorReviews", JSON.stringify(vendorReviews));
+            sessionStorage.setItem("userItems", JSON.stringify(userItems));
+            router.push("/profile");
+        } catch (error) {
+            console.error("Error fetching data for profile view:", error);
+        }
+    };
+
+    if (!carDetails) {
+        return <Loader />;
+    }
 
     return (
         <>
@@ -75,8 +166,8 @@ const CarDetails = () => {
                             <div className={styles.carDetailImage}>
                                 <Zoom>
                                     <Image
-                                        src={selectedImage.src}
-                                        alt={selectedImage.alt}
+                                        src={selectedImage || ""}
+                                        alt={carDetails.name}
                                         width={500}
                                         height={500}
                                         className={styles.mainImage}
@@ -85,15 +176,15 @@ const CarDetails = () => {
                             </div>
                             <div className={styles.thumbnailGallery}>
                                 <Row className="mt-3">
-                                    {images.map((img, index) => (
+                                    {carDetails.item_info.gallery_image_urls.map((img, index) => (
                                         <Col key={index} xs={3}>
                                             <Image
-                                                src={img.src}
+                                                src={img}
                                                 alt={`Thumbnail ${index + 1}`}
                                                 width={100}
                                                 height={100}
-                                                className={`${styles.thumbnail} ${selectedImage.src === img.src ? styles.activeThumbnail : ''}`}
-                                                onClick={() => handleThumbnailClick(img)} 
+                                                className={`${styles.thumbnail} ${selectedImage === img ? styles.activeThumbnail : ''}`}
+                                                onClick={() => handleThumbnailClick(img)}
                                             />
                                         </Col>
                                     ))}
@@ -104,22 +195,22 @@ const CarDetails = () => {
                             <div className={styles.carDetailContent}>
                                 <div className={styles.carDetailContentHeading}>
                                     <div>
-                                        <h1>{car.name}</h1>
+                                        <h1>{carDetails?.name}</h1>
                                         <p> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
                                             <path d="M15.75 7.5C15.75 12.75 9 17.25 9 17.25C9 17.25 2.25 12.75 2.25 7.5C2.25 5.70979 2.96116 3.9929 4.22703 2.72703C5.4929 1.46116 7.20979 0.75 9 0.75C10.7902 0.75 12.5071 1.46116 13.773 2.72703C15.0388 3.9929 15.75 5.70979 15.75 7.5Z" stroke="#17BEBB" strokeLinecap="round" strokeLinejoin="round" />
                                             <path d="M9 9.75C10.2426 9.75 11.25 8.74264 11.25 7.5C11.25 6.25736 10.2426 5.25 9 5.25C7.75736 5.25 6.75 6.25736 6.75 7.5C6.75 8.74264 7.75736 9.75 9 9.75Z" stroke="#17BEBB" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg> {car.location || 'Not Available'}</p>
+                                        </svg> {carDetails?.address}</p>
                                     </div>
                                     <div className={styles.carDetailRating}>
-                                        <p>{car.rating} <BsStarFill /></p>
+                                        <p>{carDetails?.item_rating} <BsStarFill /></p>
                                     </div>
                                 </div>
                                 <div className={styles.PersonDetailBox}>
                                     <div className={styles.personBox}>
-                                        <Image src={person} alt='Person' className={styles.postedPersonImg} width={65} />
+                                        <Image src={carDetails?.item_info?.host_profile_image} alt={carDetails?.item_info?.host_first_name} className={styles.postedPersonImg} width={65} height={65} />
                                         <div className={styles.personBoxContact}>
-                                            <h4>Hosted by Vikash</h4>
-                                            <Link href="/">View Profile</Link>
+                                            <h4>Hosted by {carDetails?.item_info?.host_first_name} {carDetails?.item_info?.host_last_name}</h4>
+                                            <Link href="#" onClick={handleViewProfile}>View Profile</Link>
                                         </div>
                                     </div>
                                     <div className={styles.personBoxIcon}>
@@ -132,7 +223,7 @@ const CarDetails = () => {
                                     </svg>
                                     <div className={styles.carDetailBoxContent}>
                                         <h6>Odometer</h6>
-                                        <p>0km - 100km</p>
+                                        <p>{carDetails?.item_info?.odometer}</p>
                                     </div>
                                 </div>
                                 <div className={styles.carDetailBox}>
@@ -142,7 +233,7 @@ const CarDetails = () => {
                                         </g>
                                     </svg>
                                     <div className={styles.carDetailBoxContent}>
-                                        <h6>Year 2020</h6>
+                                        <h6>Year {carDetails?.item_info?.year}</h6>
                                     </div>
                                 </div>
                                 <div className={styles.carDetailBox}>
@@ -151,7 +242,7 @@ const CarDetails = () => {
                                     </svg>
                                     <div className={styles.carDetailBoxContent}>
                                         <h6>Transmission </h6>
-                                        <p>SemiAutomtic</p>
+                                        <p>{carDetails?.item_info?.transmission}</p>
                                     </div>
                                 </div>
                                 <div className={styles.carDetailBox}>
@@ -160,68 +251,27 @@ const CarDetails = () => {
                                     </svg>
                                     <div className={styles.carDetailBoxContent}>
                                         <h6>Car Type </h6>
-                                        <p>Sedan</p>
+                                        <p>{carDetails?.item_info?.vehicleType}</p>
                                     </div>
                                 </div>
                                 <div className={styles.carFeatures}>
                                     <h4>Car Features</h4>
                                     <div className={styles.carFeaturesList}>
                                         <ul>
-                                            <li>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M17.3006 6.29988C17.2081 6.20717 17.0982 6.13363 16.9772 6.08344C16.8563 6.03326 16.7266 6.00743 16.5956 6.00743C16.4647 6.00743 16.335 6.03326 16.214 6.08344C16.093 6.13363 15.9831 6.20717 15.8906 6.29988L10.2506 11.9399L11.6606 13.3499L17.3006 7.69988C17.6806 7.31988 17.6806 6.67988 17.3006 6.29988ZM21.5406 6.28988L11.6606 16.1699L8.18063 12.6999C7.99365 12.5129 7.74005 12.4079 7.47563 12.4079C7.2112 12.4079 6.9576 12.5129 6.77063 12.6999C6.58365 12.8869 6.4786 13.1405 6.4786 13.4049C6.4786 13.6693 6.58365 13.9229 6.77063 14.1099L10.9506 18.2899C11.3406 18.6799 11.9706 18.6799 12.3606 18.2899L22.9506 7.70988C23.0433 7.61736 23.1169 7.50747 23.1671 7.3865C23.2172 7.26553 23.2431 7.13585 23.2431 7.00488C23.2431 6.87391 23.2172 6.74423 23.1671 6.62325C23.1169 6.50228 23.0433 6.39239 22.9506 6.29988H22.9406C22.8504 6.20548 22.7421 6.13017 22.6223 6.0784C22.5024 6.02664 22.3733 5.99949 22.2427 5.99856C22.1122 5.99763 21.9827 6.02293 21.8621 6.07298C21.7415 6.12302 21.6322 6.19678 21.5406 6.28988ZM1.12062 14.1199L5.30063 18.2999C5.69063 18.6899 6.32063 18.6899 6.71063 18.2999L7.41062 17.5999L2.53062 12.6999C2.43811 12.6072 2.32822 12.5336 2.20725 12.4834C2.08628 12.4333 1.95659 12.4074 1.82563 12.4074C1.69466 12.4074 1.56497 12.4333 1.444 12.4834C1.32303 12.5336 1.21314 12.6072 1.12062 12.6999C0.730625 13.0899 0.730625 13.7299 1.12062 14.1199Z" fill="#63EB67" />
-                                                </svg>
-                                                <span>Backup Camera</span>
-                                            </li>
-                                            <li>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M17.3006 6.29988C17.2081 6.20717 17.0982 6.13363 16.9772 6.08344C16.8563 6.03326 16.7266 6.00743 16.5956 6.00743C16.4647 6.00743 16.335 6.03326 16.214 6.08344C16.093 6.13363 15.9831 6.20717 15.8906 6.29988L10.2506 11.9399L11.6606 13.3499L17.3006 7.69988C17.6806 7.31988 17.6806 6.67988 17.3006 6.29988ZM21.5406 6.28988L11.6606 16.1699L8.18063 12.6999C7.99365 12.5129 7.74005 12.4079 7.47563 12.4079C7.2112 12.4079 6.9576 12.5129 6.77063 12.6999C6.58365 12.8869 6.4786 13.1405 6.4786 13.4049C6.4786 13.6693 6.58365 13.9229 6.77063 14.1099L10.9506 18.2899C11.3406 18.6799 11.9706 18.6799 12.3606 18.2899L22.9506 7.70988C23.0433 7.61736 23.1169 7.50747 23.1671 7.3865C23.2172 7.26553 23.2431 7.13585 23.2431 7.00488C23.2431 6.87391 23.2172 6.74423 23.1671 6.62325C23.1169 6.50228 23.0433 6.39239 22.9506 6.29988H22.9406C22.8504 6.20548 22.7421 6.13017 22.6223 6.0784C22.5024 6.02664 22.3733 5.99949 22.2427 5.99856C22.1122 5.99763 21.9827 6.02293 21.8621 6.07298C21.7415 6.12302 21.6322 6.19678 21.5406 6.28988ZM1.12062 14.1199L5.30063 18.2999C5.69063 18.6899 6.32063 18.6899 6.71063 18.2999L7.41062 17.5999L2.53062 12.6999C2.43811 12.6072 2.32822 12.5336 2.20725 12.4834C2.08628 12.4333 1.95659 12.4074 1.82563 12.4074C1.69466 12.4074 1.56497 12.4333 1.444 12.4834C1.32303 12.5336 1.21314 12.6072 1.12062 12.6999C0.730625 13.0899 0.730625 13.7299 1.12062 14.1199Z" fill="#63EB67" />
-                                                </svg>
-                                                <span>Backup Camera</span>
-                                            </li>
-                                            <li>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M17.3006 6.29988C17.2081 6.20717 17.0982 6.13363 16.9772 6.08344C16.8563 6.03326 16.7266 6.00743 16.5956 6.00743C16.4647 6.00743 16.335 6.03326 16.214 6.08344C16.093 6.13363 15.9831 6.20717 15.8906 6.29988L10.2506 11.9399L11.6606 13.3499L17.3006 7.69988C17.6806 7.31988 17.6806 6.67988 17.3006 6.29988ZM21.5406 6.28988L11.6606 16.1699L8.18063 12.6999C7.99365 12.5129 7.74005 12.4079 7.47563 12.4079C7.2112 12.4079 6.9576 12.5129 6.77063 12.6999C6.58365 12.8869 6.4786 13.1405 6.4786 13.4049C6.4786 13.6693 6.58365 13.9229 6.77063 14.1099L10.9506 18.2899C11.3406 18.6799 11.9706 18.6799 12.3606 18.2899L22.9506 7.70988C23.0433 7.61736 23.1169 7.50747 23.1671 7.3865C23.2172 7.26553 23.2431 7.13585 23.2431 7.00488C23.2431 6.87391 23.2172 6.74423 23.1671 6.62325C23.1169 6.50228 23.0433 6.39239 22.9506 6.29988H22.9406C22.8504 6.20548 22.7421 6.13017 22.6223 6.0784C22.5024 6.02664 22.3733 5.99949 22.2427 5.99856C22.1122 5.99763 21.9827 6.02293 21.8621 6.07298C21.7415 6.12302 21.6322 6.19678 21.5406 6.28988ZM1.12062 14.1199L5.30063 18.2999C5.69063 18.6899 6.32063 18.6899 6.71063 18.2999L7.41062 17.5999L2.53062 12.6999C2.43811 12.6072 2.32822 12.5336 2.20725 12.4834C2.08628 12.4333 1.95659 12.4074 1.82563 12.4074C1.69466 12.4074 1.56497 12.4333 1.444 12.4834C1.32303 12.5336 1.21314 12.6072 1.12062 12.6999C0.730625 13.0899 0.730625 13.7299 1.12062 14.1199Z" fill="#63EB67" />
-                                                </svg>
-                                                <span>Backup Camera</span>
-                                            </li>
-                                            <li>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M17.3006 6.29988C17.2081 6.20717 17.0982 6.13363 16.9772 6.08344C16.8563 6.03326 16.7266 6.00743 16.5956 6.00743C16.4647 6.00743 16.335 6.03326 16.214 6.08344C16.093 6.13363 15.9831 6.20717 15.8906 6.29988L10.2506 11.9399L11.6606 13.3499L17.3006 7.69988C17.6806 7.31988 17.6806 6.67988 17.3006 6.29988ZM21.5406 6.28988L11.6606 16.1699L8.18063 12.6999C7.99365 12.5129 7.74005 12.4079 7.47563 12.4079C7.2112 12.4079 6.9576 12.5129 6.77063 12.6999C6.58365 12.8869 6.4786 13.1405 6.4786 13.4049C6.4786 13.6693 6.58365 13.9229 6.77063 14.1099L10.9506 18.2899C11.3406 18.6799 11.9706 18.6799 12.3606 18.2899L22.9506 7.70988C23.0433 7.61736 23.1169 7.50747 23.1671 7.3865C23.2172 7.26553 23.2431 7.13585 23.2431 7.00488C23.2431 6.87391 23.2172 6.74423 23.1671 6.62325C23.1169 6.50228 23.0433 6.39239 22.9506 6.29988H22.9406C22.8504 6.20548 22.7421 6.13017 22.6223 6.0784C22.5024 6.02664 22.3733 5.99949 22.2427 5.99856C22.1122 5.99763 21.9827 6.02293 21.8621 6.07298C21.7415 6.12302 21.6322 6.19678 21.5406 6.28988ZM1.12062 14.1199L5.30063 18.2999C5.69063 18.6899 6.32063 18.6899 6.71063 18.2999L7.41062 17.5999L2.53062 12.6999C2.43811 12.6072 2.32822 12.5336 2.20725 12.4834C2.08628 12.4333 1.95659 12.4074 1.82563 12.4074C1.69466 12.4074 1.56497 12.4333 1.444 12.4834C1.32303 12.5336 1.21314 12.6072 1.12062 12.6999C0.730625 13.0899 0.730625 13.7299 1.12062 14.1199Z" fill="#63EB67" />
-                                                </svg>
-                                                <span>Backup Camera</span>
-                                            </li>
-                                        </ul>
-                                        <ul>
-                                            <li>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M17.3006 6.29988C17.2081 6.20717 17.0982 6.13363 16.9772 6.08344C16.8563 6.03326 16.7266 6.00743 16.5956 6.00743C16.4647 6.00743 16.335 6.03326 16.214 6.08344C16.093 6.13363 15.9831 6.20717 15.8906 6.29988L10.2506 11.9399L11.6606 13.3499L17.3006 7.69988C17.6806 7.31988 17.6806 6.67988 17.3006 6.29988ZM21.5406 6.28988L11.6606 16.1699L8.18063 12.6999C7.99365 12.5129 7.74005 12.4079 7.47563 12.4079C7.2112 12.4079 6.9576 12.5129 6.77063 12.6999C6.58365 12.8869 6.4786 13.1405 6.4786 13.4049C6.4786 13.6693 6.58365 13.9229 6.77063 14.1099L10.9506 18.2899C11.3406 18.6799 11.9706 18.6799 12.3606 18.2899L22.9506 7.70988C23.0433 7.61736 23.1169 7.50747 23.1671 7.3865C23.2172 7.26553 23.2431 7.13585 23.2431 7.00488C23.2431 6.87391 23.2172 6.74423 23.1671 6.62325C23.1169 6.50228 23.0433 6.39239 22.9506 6.29988H22.9406C22.8504 6.20548 22.7421 6.13017 22.6223 6.0784C22.5024 6.02664 22.3733 5.99949 22.2427 5.99856C22.1122 5.99763 21.9827 6.02293 21.8621 6.07298C21.7415 6.12302 21.6322 6.19678 21.5406 6.28988ZM1.12062 14.1199L5.30063 18.2999C5.69063 18.6899 6.32063 18.6899 6.71063 18.2999L7.41062 17.5999L2.53062 12.6999C2.43811 12.6072 2.32822 12.5336 2.20725 12.4834C2.08628 12.4333 1.95659 12.4074 1.82563 12.4074C1.69466 12.4074 1.56497 12.4333 1.444 12.4834C1.32303 12.5336 1.21314 12.6072 1.12062 12.6999C0.730625 13.0899 0.730625 13.7299 1.12062 14.1199Z" fill="#63EB67" />
-                                                </svg>
-                                                <span>Backup Camera</span>
-                                            </li>
-                                            <li>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M17.3006 6.29988C17.2081 6.20717 17.0982 6.13363 16.9772 6.08344C16.8563 6.03326 16.7266 6.00743 16.5956 6.00743C16.4647 6.00743 16.335 6.03326 16.214 6.08344C16.093 6.13363 15.9831 6.20717 15.8906 6.29988L10.2506 11.9399L11.6606 13.3499L17.3006 7.69988C17.6806 7.31988 17.6806 6.67988 17.3006 6.29988ZM21.5406 6.28988L11.6606 16.1699L8.18063 12.6999C7.99365 12.5129 7.74005 12.4079 7.47563 12.4079C7.2112 12.4079 6.9576 12.5129 6.77063 12.6999C6.58365 12.8869 6.4786 13.1405 6.4786 13.4049C6.4786 13.6693 6.58365 13.9229 6.77063 14.1099L10.9506 18.2899C11.3406 18.6799 11.9706 18.6799 12.3606 18.2899L22.9506 7.70988C23.0433 7.61736 23.1169 7.50747 23.1671 7.3865C23.2172 7.26553 23.2431 7.13585 23.2431 7.00488C23.2431 6.87391 23.2172 6.74423 23.1671 6.62325C23.1169 6.50228 23.0433 6.39239 22.9506 6.29988H22.9406C22.8504 6.20548 22.7421 6.13017 22.6223 6.0784C22.5024 6.02664 22.3733 5.99949 22.2427 5.99856C22.1122 5.99763 21.9827 6.02293 21.8621 6.07298C21.7415 6.12302 21.6322 6.19678 21.5406 6.28988ZM1.12062 14.1199L5.30063 18.2999C5.69063 18.6899 6.32063 18.6899 6.71063 18.2999L7.41062 17.5999L2.53062 12.6999C2.43811 12.6072 2.32822 12.5336 2.20725 12.4834C2.08628 12.4333 1.95659 12.4074 1.82563 12.4074C1.69466 12.4074 1.56497 12.4333 1.444 12.4834C1.32303 12.5336 1.21314 12.6072 1.12062 12.6999C0.730625 13.0899 0.730625 13.7299 1.12062 14.1199Z" fill="#63EB67" />
-                                                </svg>
-                                                <span>Backup Camera</span>
-                                            </li>
-                                            <li>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M17.3006 6.29988C17.2081 6.20717 17.0982 6.13363 16.9772 6.08344C16.8563 6.03326 16.7266 6.00743 16.5956 6.00743C16.4647 6.00743 16.335 6.03326 16.214 6.08344C16.093 6.13363 15.9831 6.20717 15.8906 6.29988L10.2506 11.9399L11.6606 13.3499L17.3006 7.69988C17.6806 7.31988 17.6806 6.67988 17.3006 6.29988ZM21.5406 6.28988L11.6606 16.1699L8.18063 12.6999C7.99365 12.5129 7.74005 12.4079 7.47563 12.4079C7.2112 12.4079 6.9576 12.5129 6.77063 12.6999C6.58365 12.8869 6.4786 13.1405 6.4786 13.4049C6.4786 13.6693 6.58365 13.9229 6.77063 14.1099L10.9506 18.2899C11.3406 18.6799 11.9706 18.6799 12.3606 18.2899L22.9506 7.70988C23.0433 7.61736 23.1169 7.50747 23.1671 7.3865C23.2172 7.26553 23.2431 7.13585 23.2431 7.00488C23.2431 6.87391 23.2172 6.74423 23.1671 6.62325C23.1169 6.50228 23.0433 6.39239 22.9506 6.29988H22.9406C22.8504 6.20548 22.7421 6.13017 22.6223 6.0784C22.5024 6.02664 22.3733 5.99949 22.2427 5.99856C22.1122 5.99763 21.9827 6.02293 21.8621 6.07298C21.7415 6.12302 21.6322 6.19678 21.5406 6.28988ZM1.12062 14.1199L5.30063 18.2999C5.69063 18.6899 6.32063 18.6899 6.71063 18.2999L7.41062 17.5999L2.53062 12.6999C2.43811 12.6072 2.32822 12.5336 2.20725 12.4834C2.08628 12.4333 1.95659 12.4074 1.82563 12.4074C1.69466 12.4074 1.56497 12.4333 1.444 12.4834C1.32303 12.5336 1.21314 12.6072 1.12062 12.6999C0.730625 13.0899 0.730625 13.7299 1.12062 14.1199Z" fill="#63EB67" />
-                                                </svg>
-                                                <span>Backup Camera</span>
-                                            </li>
-                                            <li>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M17.3006 6.29988C17.2081 6.20717 17.0982 6.13363 16.9772 6.08344C16.8563 6.03326 16.7266 6.00743 16.5956 6.00743C16.4647 6.00743 16.335 6.03326 16.214 6.08344C16.093 6.13363 15.9831 6.20717 15.8906 6.29988L10.2506 11.9399L11.6606 13.3499L17.3006 7.69988C17.6806 7.31988 17.6806 6.67988 17.3006 6.29988ZM21.5406 6.28988L11.6606 16.1699L8.18063 12.6999C7.99365 12.5129 7.74005 12.4079 7.47563 12.4079C7.2112 12.4079 6.9576 12.5129 6.77063 12.6999C6.58365 12.8869 6.4786 13.1405 6.4786 13.4049C6.4786 13.6693 6.58365 13.9229 6.77063 14.1099L10.9506 18.2899C11.3406 18.6799 11.9706 18.6799 12.3606 18.2899L22.9506 7.70988C23.0433 7.61736 23.1169 7.50747 23.1671 7.3865C23.2172 7.26553 23.2431 7.13585 23.2431 7.00488C23.2431 6.87391 23.2172 6.74423 23.1671 6.62325C23.1169 6.50228 23.0433 6.39239 22.9506 6.29988H22.9406C22.8504 6.20548 22.7421 6.13017 22.6223 6.0784C22.5024 6.02664 22.3733 5.99949 22.2427 5.99856C22.1122 5.99763 21.9827 6.02293 21.8621 6.07298C21.7415 6.12302 21.6322 6.19678 21.5406 6.28988ZM1.12062 14.1199L5.30063 18.2999C5.69063 18.6899 6.32063 18.6899 6.71063 18.2999L7.41062 17.5999L2.53062 12.6999C2.43811 12.6072 2.32822 12.5336 2.20725 12.4834C2.08628 12.4333 1.95659 12.4074 1.82563 12.4074C1.69466 12.4074 1.56497 12.4333 1.444 12.4834C1.32303 12.5336 1.21314 12.6072 1.12062 12.6999C0.730625 13.0899 0.730625 13.7299 1.12062 14.1199Z" fill="#63EB67" />
-                                                </svg>
-                                                <span>Backup Camera</span>
-                                            </li>
+                                            {carDetails?.item_info?.features_data?.map((feature: Feature, index: number) => (
+                                                <li key={feature.id || index}>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M17.3006 6.29988C17.2081 6.20717 17.0982 6.13363 16.9772 6.08344C16.8563 6.03326 16.7266 6.00743 16.5956 6.00743C16.4647 6.00743 16.335 6.03326 16.214 6.08344C16.093 6.13363 15.9831 6.20717 15.8906 6.29988L10.2506 11.9399L11.6606 13.3499L17.3006 7.69988C17.6806 7.31988 17.6806 6.67988 17.3006 6.29988ZM21.5406 6.28988L11.6606 16.1699L8.18063 12.6999C7.99365 12.5129 7.74005 12.4079 7.47563 12.4079C7.2112 12.4079 6.9576 12.5129 6.77063 12.6999C6.58365 12.8869 6.4786 13.1405 6.4786 13.4049C6.4786 13.6693 6.58365 13.9229 6.77063 14.1099L10.9506 18.2899C11.3406 18.6799 11.9706 18.6799 12.3606 18.2899L22.9506 7.70988C23.0433 7.61736 23.1169 7.50747 23.1671 7.3865C23.2172 7.26553 23.2431 7.13585 23.2431 7.00488C23.2431 6.87391 23.2172 6.74423 23.1671 6.62325C23.1169 6.50228 23.0433 6.39239 22.9506 6.29988H22.9406C22.8504 6.20548 22.7421 6.13017 22.6223 6.0784C22.5024 6.02664 22.3733 5.99949 22.2427 5.99856C22.1122 5.99763 21.9827 6.02293 21.8621 6.07298C21.7415 6.12302 21.6322 6.19678 21.5406 6.28988ZM1.12062 14.1199L5.30063 18.2999C5.69063 18.6899 6.32063 18.6899 6.71063 18.2999L7.41062 17.5999L2.53062 12.6999C2.43811 12.6072 2.32822 12.5336 2.20725 12.4834C2.08628 12.4333 1.95659 12.4074 1.82563 12.4074C1.69466 12.4074 1.56497 12.4333 1.444 12.4834C1.32303 12.5336 1.21314 12.6072 1.12062 12.6999C0.730625 13.0899 0.730625 13.7299 1.12062 14.1199Z" fill="#63EB67" />
+                                                    </svg>
+                                                    <span>{feature.name}</span>
+                                                </li>
+                                            ))}
+
                                         </ul>
                                     </div>
                                 </div>
                                 <div className={styles.checkoutRightSectionPolicy}>
-                                    <div className={styles.checkoutRightSectionPolicyBox}>
+                                    <div className={styles.checkoutRightSectionPolicyBox} onClick={handleShowRules} data-bs-toggle="modal" data-bs-target="#rulesModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                             <g clipPath="url(#clip0_1966_5371)">
                                                 <g clipPath="url(#clip1_1966_5371)">
@@ -258,7 +308,7 @@ const CarDetails = () => {
                                     </div>
                                 </div>
                                 <div className={styles.checkoutRightSectionPolicy}>
-                                    <div className={styles.checkoutRightSectionPolicyBox}>
+                                    <div className={styles.checkoutRightSectionPolicyBox} onClick={handleShowCancellation} data-bs-toggle="modal" data-bs-target="#cancellationModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
                                             <path d="M4 9.13281H20" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                             <path d="M4 15.1328H20" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -281,7 +331,7 @@ const CarDetails = () => {
                                     </div>
                                 </div>
                                 <div className={styles.carDetailBoxButton}>
-                                    <p>$ 500.00 <span>/day</span> </p>
+                                    <p>${carDetails.price}<span>/day</span> </p>
                                     <Button type='button' onClick={handleRedirect} className={styles.themeBtn}>Check Availability</Button>
                                 </div>
                             </div>
@@ -291,8 +341,7 @@ const CarDetails = () => {
                         <Col md={12}>
                             <div className={styles.aboutSection}>
                                 <h4>About the car</h4>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in  </p>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in  </p>
+                                <p>{carDetails?.item_info?.description}</p>
                             </div>
                         </Col>
                     </Row>
@@ -300,12 +349,54 @@ const CarDetails = () => {
                         <Col md={12}>
                             <div className={styles.aboutSection}>
                                 <h4>We will be here</h4>
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3681.5693874343087!2d75.8489295749665!3d22.66983832942253!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3962fc622f1d71f3%3A0x40f0beba31119d7a!2sShivalay%20Colony%2C%20Indore%2C%20Madhya%20Pradesh%20452020!5e0!3m2!1sen!2sin!4v1734446934144!5m2!1sen!2sin" width="100%" height="600" loading="lazy"></iframe>
+                                <iframe
+                                    className={styles.aboutSectionMap}
+                                    src={`https://www.google.com/maps?q=${carDetails.latitude},${carDetails.longitude}&hl=en&z=15&output=embed`}
+                                    width="100%"
+                                    height="600"
+                                    loading="lazy"
+                                />
                             </div>
                         </Col>
                     </Row>
                 </Container>
             </section>
+            {/* House Rules Modal */}
+            <Modal show={showRulesModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>House Rules</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <ul>
+                        {carDetails.item_info.rules.map((rule: string, index: number) => (
+                            <li key={index}>{rule}</li>
+                        ))}
+                    </ul>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            {/* Cancellation Policy Modal */}
+            <Modal show={showCancellationModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{carDetails.item_info.cancellation_reason_title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <ul>
+                        {carDetails.item_info.cancellation_reason_description?.map((desc, index) => (
+                            <li key={index}>{desc}</li>
+                        ))}
+                    </ul>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
             <Newsletter />
         </>
     );

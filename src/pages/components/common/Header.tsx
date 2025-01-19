@@ -7,23 +7,47 @@ import wishlist from '../../../Images/heart.svg';
 import cart from '../../../Images/cart.svg';
 import styles from "@/styles/Layout.module.css";
 import locationWhite from '../../../Images/location-white.svg';
-import { Col, Container, Row, Navbar, Nav, Form } from 'react-bootstrap';
-import { ChangeEvent, useState } from 'react';
+import { Col, Container, Row, Navbar, Nav, Form, Dropdown } from 'react-bootstrap';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { BsPinMapFill, BsSearch } from 'react-icons/bs';
 import Breadcrumbs from './Breadcrumbs';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useAuth } from '@/context/AuthContext';
+interface Profile {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  birthdate: string;
+  aboutYourself: string;
+  profileImage: string;
+}
 
 const Header = () => {
   const router = useRouter();
+  const { logout } = useAuth();
   const isHomePage = router.pathname === "/";
   const [searchQuery, setSearchQuery] = useState<string>('');
-  // const [fromDate, setFromDate] = useState<Date | null>(null);
   const [toDate, setToDate] = useState<Date | null>(null);
-  // const [location, setLocation] = useState<string>('');
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const storedData = localStorage.getItem("userData");
+    if (storedData) {
+      setProfile(JSON.parse(storedData));
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/auth/login');
+  };
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+
+  const isLoggedIn = profile !== null;
 
   return (
     <>
@@ -80,26 +104,37 @@ const Header = () => {
               </div>
             </div>
           )}
-          {/* Profile Section */}
+          {/* Profile Section with Dropdown */}
           {!isHomePage ? (
-            <div className={`d-flex gap-3 ${styles.ProfileSection}`} >
+            <div className={`d-flex gap-3 ${styles.ProfileSection}`}>
               <div className={styles['profile-section']}>
-                <Image src={userIcon} className={styles['user-icon']} alt="User Profile" />
+                <Link href={isLoggedIn ? "/profile" : "/auth/login"}><Image src={userIcon} className={styles['user-icon']} alt="User Profile" /></Link>
               </div>
               <div className={styles['profile-section']}>
-                <Image src={wishlist} className={styles['user-icon']} alt="Wishlist" />
+                <Link href="/wishlist"><Image src={wishlist} className={styles['user-icon']} alt="Wishlist" /></Link>
               </div>
               <div className={styles['profile-section']}>
-                <Image src={cart} className={styles['user-icon']} alt="Cart" />
+                <Link href={isLoggedIn ? "/profile" : "/auth/login"}><Image src={cart} className={styles['user-icon']} alt="Cart" /></Link>
               </div>
             </div>
+          ) : isLoggedIn ? (
+            <Dropdown align="end">
+              <Dropdown.Toggle variant="link" id="profile-dropdown">
+                <Image src={userIcon} className={styles['user-icon']} alt="User Profile" />
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item href="/profile">My Profile</Dropdown.Item>
+                <Dropdown.Item href="/orders">My Orders</Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
           ) : (
             <div className={styles['profile-section']}>
-              <Link href="/profile"><Image src={userIcon} className={styles['user-icon']} alt="User Profile" /></Link>
+              <Link href={isLoggedIn ? "/profile" : "/auth/login"}><Image src={userIcon} className={styles['user-icon']} alt="User Profile" /></Link>
             </div>
           )}
         </div>
-        {/* Full-Width Search Bar */}
         {!isHomePage && (
           <div className={`${styles['search-bar']} ${styles['mobile-search-bar']}`}>
             <input
@@ -114,7 +149,6 @@ const Header = () => {
             </div>
           </div>
         )}
-        {/* Date and Location Picker */}
         {!isHomePage && (
           <Container>
             <div className={`${styles['date-location-picker']} d-flex align-items-center`}>

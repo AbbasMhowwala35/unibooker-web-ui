@@ -1,92 +1,139 @@
 import Head from 'next/head'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from "@/styles/CarList.module.css";
 import { Col, Container, Row } from 'react-bootstrap';
 import CarCard from '../components/common/CarCard';
 import { Jost } from 'next/font/google';
-import Link from 'next/link';
+import Loader from '../components/common/Loader';
+import api from '../api/api';
 const jostFont = Jost({
     variable: "--font-jost",
     subsets: ["latin"],
 });
-const cars = [
-    {
-        id: "1",
-        name: "Tesla",
-        rating: 5,
-        reviews: 242,
-        location: "Wilora NT 0872, Australia",
-        price: "$165,3",
-        distance: "12 km",
-        wishlist: "/static/wishlist.png",
-    },
-    {
-        id: "2",
-        name: "BMW",
-        rating: 4.5,
-        reviews: 128,
-        location: undefined,
-        price: "$120,0",
-        distance: "8 km",
-        wishlist: undefined,
-    },
-    {
-        id: "3",
-        name: "BMW",
-        rating: 4.5,
-        reviews: 128,
-        location: undefined,
-        price: "$120,0",
-        distance: "8 km",
-        wishlist: undefined,
-    },
-    {
-        // image: "/images/car2.png",
-        id: "4",
-        name: "BMW",
-        rating: 4.5,
-        reviews: 128,
-        location: undefined,
-        price: "$120,0",
-        distance: "8 km",
-        wishlist: undefined,
-    },
-    {
-        // image: "/images/car2.png",
-        id: "5",
-        name: "BMW",
-        rating: 4.5,
-        reviews: 128,
-        location: undefined,
-        price: "$120,0",
-        distance: "8 km",
-        wishlist: undefined,
-    },
-    {
-        // image: "/images/car2.png",
-        id: "6",
-        name: "BMW",
-        rating: 4.5,
-        reviews: 128,
-        location: undefined,
-        price: "$120,0",
-        distance: "8 km",
-        wishlist: undefined,
-    },
-    {
-        // image: "/images/car2.png",
-        id: "7",
-        name: "BMW",
-        rating: 4.5,
-        reviews: 128,
-        location: undefined,
-        price: "$120,0",
-        distance: "8 km",
-        wishlist: undefined,
-    },
 
-];
-const index = () => {
+interface Car {
+    id: string;
+    name: string;
+    item_rating: number;
+    is_in_wishlist: boolean
+    address: string;
+    state_region: string;
+    city: string;
+    zip_postal_code: string;
+    price: string;
+    latitude: string;
+    longitude: string;
+    status: string;
+    item_type_id: string;
+    image: string;
+    item_info: string;
+    is_verified: string;
+    is_featured: string;
+    booking_policies_id: number;
+    weekly_discount: string;
+    weekly_discount_type: string;
+    monthly_discount: string;
+    monthly_discount_type: string;
+    doorStep_price: string | null;
+    cancellation_reason_title: string;
+    cancellation_reason_description: string[];
+    features_data: {
+        id: number;
+        name: string;
+        image_url: string | null;
+    }[];
+}
+interface ItemType {
+    id: number;
+    name: string;
+    description: string;
+    status: string;
+    image: string | null;
+}
+
+interface Make {
+    id: number;
+    name: string;
+    description: string;
+    status: string;
+    imageURL: string;
+}
+
+
+const Index = () => {
+    const [homeData, setHomeData] = useState<Car[]>([]);
+    const [filteredData, setFilteredData] = useState<Car[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [itemTypes, setItemTypes] = useState<ItemType[]>([]);
+    const [makes, setMakes] = useState<Make[]>([]);
+    const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+    useEffect(() => {
+        const userData = localStorage.getItem("userData");
+        const parsedUserData = userData ? JSON.parse(userData) : null;
+        const token = parsedUserData?.token || "";
+        if (token) {
+            const fetchData = async () => {
+                try {
+                    const response = await api.get("/homeData", {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    const mergedData = [
+                        ...response.data.data.nearby_items,
+                        ...response.data.data.featured_items,
+                        ...response.data.data.new_arrival_items,
+                    ];
+                    setHomeData(mergedData);
+                    setFilteredData(mergedData);
+                    setMakes(response.data.data.makes || []);
+                    setItemTypes(response.data.data.itemTypes || []);
+                } catch (error) {
+                    console.error("Error fetching home data:", error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchData();
+        }
+    }, []);
+
+    useEffect(() => {
+        const selectedCity = localStorage.getItem("selectedCity");
+        const selectedBrand = sessionStorage.getItem("selectedBrand");
+        const filtered = homeData.filter((car) => {
+            const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
+            const makeType = itemInfo.make_type || "";
+            const matchesBrandInSession = !selectedBrand || makeType === selectedBrand;
+            const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(makeType);
+            const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(car.item_type_id.toString());
+            const matchesCity = !selectedCity || car.city === selectedCity;
+    
+            return matchesBrandInSession && matchesBrand && matchesCategory && matchesCity;
+        });
+        setFilteredData(filtered);
+    }, [selectedBrands, selectedCategories, homeData]);    
+
+    const handleBrandChange = (brand: string) => {
+        setSelectedBrands((prev) =>
+            prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
+        );
+    };
+
+    const handleCategoryChange = (category: string) => {
+        setSelectedCategories((prev) =>
+            prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+        );
+    };
+
+    const saveSelectedCar = (car: Car) => {
+        sessionStorage.setItem("selectedCar", JSON.stringify(car));
+    };
+
+    if (loading) {
+        return <Loader />;
+    }
+
     return (
         <>
             <Head>
@@ -105,10 +152,17 @@ const index = () => {
                             <div className={styles.filter_section}>
                                 <h5>Categories</h5>
                                 <ul>
-                                    <li><input type="checkbox" /> Electric</li>
-                                    <li><input type="checkbox" /> SUV</li>
-                                    <li><input type="checkbox" /> Sedan</li>
-                                    <li><input type="checkbox" /> Coupe</li>
+                                    {itemTypes.map((item) => (
+                                        <li key={item?.id}>
+                                            <input
+                                                type="checkbox"
+                                                id={`filter-${item.id}`}
+                                                checked={selectedCategories.includes(item.id.toString())}
+                                                onChange={() => handleCategoryChange(item.id.toString())}
+                                            />
+                                            <label htmlFor={`filter-${item.id}`}>{item.name}</label>
+                                        </li>
+                                    ))}
                                 </ul>
                                 <div className={styles.checkbox}>
                                     <h5>Price Range</h5>
@@ -117,10 +171,17 @@ const index = () => {
                                 </div>
                                 <h5>Brands</h5>
                                 <ul>
-                                    <li><input type="checkbox" /> Tesla</li>
-                                    <li><input type="checkbox" /> BMW</li>
-                                    <li><input type="checkbox" /> Mercedes</li>
-                                    <li><input type="checkbox" /> Audi</li>
+                                    {makes.map((make) => (
+                                        <li key={make.id}>
+                                            <input
+                                                type="checkbox"
+                                                id={`make-${make.id}`}
+                                                checked={selectedBrands.includes(make.name) || sessionStorage.getItem("selectedBrand") === make.name}
+                                                onChange={() => handleBrandChange(make.name)}
+                                            />
+                                            <label htmlFor={`make-${make.id}`}>{make.name}</label>
+                                        </li>
+                                    ))}
                                 </ul>
                                 <ul>
                                     <li><input type="checkbox" /> On Sale</li>
@@ -137,22 +198,31 @@ const index = () => {
                             </div>
                         </Col>
                         <Col md={9} className='text-center'>
-                            <div className={styles.cars_row}>
-                                {cars.map((car) => (
-                                     <Link key={car.id} href={`/cars/${car.id}`}>
-                                        <CarCard
-                                            id={car.id}
-                                            name={car.name}
-                                            rating={car.rating}
-                                            reviews={car.reviews}
-                                            location={car.location}
-                                            price={car.price}
-                                            distance={car.distance}
-                                            wishlist={car.wishlist}
-                                        />
-                                    </Link>
-                                ))}
-                            </div>
+                            {filteredData.length === 0 ? (
+                                <div className="no_data">No data available</div>
+                            ) : (
+                                <div className={styles.cars_row}>
+                                    {filteredData.map((car, index) => (
+                                        <div
+                                            key={index}
+                                            onClick={() => saveSelectedCar(car)}
+                                        >
+                                            <CarCard
+                                                id={car.id}
+                                                image={car.image}
+                                                name={car.name}
+                                                item_rating={car.item_rating}
+                                                rating={car.item_rating}
+                                                location={car.address}
+                                                price={car.price}
+                                                is_in_wishlist={car.is_in_wishlist}
+                                                item_info={car.item_info}
+                                                saveSelectedCar={saveSelectedCar}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </Col>
                     </Row>
                 </Container>
@@ -161,4 +231,4 @@ const index = () => {
     )
 }
 
-export default index
+export default Index

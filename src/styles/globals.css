@@ -138,3 +138,41 @@ span.PageInfo.active {
 span.input-group-text {
   border: none;
 }
+
+.error {
+  margin: 10px 0;
+  color: red;
+  text-align: left;
+}
+
+.react-tel-input .form-control {
+  all: unset !important;
+}
+
+.phoneInput {
+  height: 60px;
+  background-color: #F7F7F7;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  gap: 80px;
+}
+
+.intl-tel-input.allow-dropdown .flag-container {
+  left: 50px !important;
+}
+
+.intl-tel-input.allow-dropdown input, .intl-tel-input.allow-dropdown input[type=text], .intl-tel-input.allow-dropdown input[type=tel] {
+  padding-left: 100px !important;
+}
+
+.no_data {
+  font-size: 1.5rem;
+  color: #ff0000;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.react-calendar {
+  width: 100% !important;
+}

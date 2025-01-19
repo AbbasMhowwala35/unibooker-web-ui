@@ -2,12 +2,32 @@ import React, { useState } from 'react';
 import styles from "../../../styles/Profile.module.css";
 import Link from 'next/link';
 import { BsFillSendFill } from 'react-icons/bs';
+import api from '@/pages/api/api';
 
 const CreateTicket = () => {
     const [isTicketCreated, setIsTicketCreated] = useState(false);
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const [ticketTitle, setTicketTitle] = useState("");
+    const [ticketDescription, setTicketDescription] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsTicketCreated(true);
+        setLoading(true);
+        const ticketData = {
+            title: ticketTitle,
+            description: ticketDescription,
+        };
+
+        try {
+            const response = await api.post('/createSupportTicket', ticketData);
+            if (response.status === 200) {
+                setIsTicketCreated(true);
+            }
+        } catch (error) {
+            console.error("Error creating ticket", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -17,40 +37,54 @@ const CreateTicket = () => {
                     <h3>Create Ticket</h3>
                     <div className={styles.ProfileChildCardForm}>
                         <div className={styles.ProfileCreateTicket}>
-                        <h4>
-                            <input type="checkbox" className='checkInput' id="terms" />
-                            Accept the <Link href="/">Terms and Conditions</Link>
+                            <h4>
+                                {/* <input type="checkbox" className='checkInput' id="terms" /> */}
+                                Accept the <Link href="/">Terms and Conditions</Link>
                             </h4>
 
                             <hr />
-                            <p>
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
-                                in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+                            {/* <p>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
+                                in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
                                 sunt in culpa qui officia deserunt mollit anim id est laborum.
-                            </p>
+                            </p> */}
                         </div>
                         <form className={styles.ProfileCreateTicketForm} onSubmit={handleSubmit}>
                             <div className="row mb-4">
-                                <input type="text" id="firstName" className="form-control" placeholder="Ticket Title" required />
-                            </div>
+                                <input
+                                    type="text"
+                                    id="ticketTitle"
+                                    className="form-control"
+                                    placeholder="Ticket Title"
+                                    value={ticketTitle}
+                                    onChange={(e) => setTicketTitle(e.target.value)}
+                                    required
+                                />                            </div>
                             <div className="row mb-4">
-                                <textarea id="aboutYourself" className="form-control" placeholder="Tell us about yourself" required></textarea>
-                            </div>
+                                <textarea
+                                    id="ticketDescription"
+                                    className="form-control"
+                                    placeholder="Tell us about your issue"
+                                    value={ticketDescription}
+                                    onChange={(e) => setTicketDescription(e.target.value)}
+                                    required
+                                />                            </div>
                             <div className="text-center">
-                                <button type="submit" className={styles.ProfileCreateTicketFormButton}>Send Ticket</button>
-                            </div>
+                                <button type="submit" className={styles.ProfileCreateTicketFormButton} disabled={loading}>
+                                    {loading ? "Submitting..." : "Send Ticket"}
+                                </button>                            </div>
                         </form>
                     </div>
                 </>
             ) : (
                 <div className={styles.TicketDisplayCard}>
-                    <h4>Ticket Title</h4>
+                    <h4>{ticketTitle}</h4>
                     <hr />
                     <p className={styles.TicketDescription}>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
-                        in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
+                        in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
                         sunt in culpa qui officia deserunt mollit anim id est laborum.
                     </p>
                     <div className={styles.ChatSection}>

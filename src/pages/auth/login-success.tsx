@@ -4,8 +4,8 @@ import Newsletter from "../components/common/Newsletter";
 import styles from '@/styles/Auth.module.css';
 import Image from "next/image";
 import success from '../../Images/success.svg';
-import pattern from '../../Images/pattern.svg';
 import { Jost } from "next/font/google";
+import { useRouter } from "next/router";
 
 const jostFont = Jost({
   variable: "--font-jost",
@@ -13,12 +13,10 @@ const jostFont = Jost({
 });
 
 const LoginSuccess = () => {
-  // const [passwordVisible, setPasswordVisible] = useState(false);
-
-  // const togglePasswordVisibility = () => {
-  //   setPasswordVisible(!passwordVisible);
-  // };
-
+  const router = useRouter();
+  const handleLogin = () => {
+    router.push('/auth/login'); 
+  };
   return (
     <>
       <div className={`${styles.page} ${jostFont.variable}`}>
@@ -36,7 +34,7 @@ const LoginSuccess = () => {
                     <h2 className={styles.authTitle}>Great! Password Changed</h2>
                     <p className={styles.authPara}>Don’t worry We’ll let you know if there is any problem with your account</p>
                   </div>
-                  <button type="submit" className={styles.authButton}>
+                  <button type="submit" onClick={handleLogin} className={styles.authButton}>
                       Login
                     </button>
                   {/* Sign Up Option */}
@@ -44,9 +42,9 @@ const LoginSuccess = () => {
                     <p>Try again<Link href="/auth/signup"> Go Back</Link></p>
                   </div>
                 </div>
-                <div className={styles.patternBox}>
+                {/* <div className={styles.patternBox}>
                     <Image src={pattern} className="img-fluid" alt="Pattern" />
-                </div>
+                </div> */}
               </Col>
             </Row>
           </Container>

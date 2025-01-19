@@ -124,6 +124,12 @@
 .locationImg {
   max-width: 250px;
   height: 200px;
+  border-radius: 20px;
+}
+
+.locationImgGrid {
+  width: 100%;
+  border-radius: 20px;
 }
 
 .popular_locations,
@@ -142,6 +148,7 @@
   text-align: center;
   position: relative;
   margin: 0 auto;
+  cursor: pointer;
 }
 
 .location_card h3 {
@@ -152,6 +159,7 @@
   right: 0;
   top: 50%;
   font-size: 20px;
+  width: 90%;
 }
 
 .btn_link {
@@ -162,10 +170,9 @@
 
 /* Company Logos */
 .company_logos_row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
 }
 
 .company_logos_div {
@@ -249,6 +256,10 @@
 .advertising_btn {
   color: #17BEBB;
   margin-top: 10px;
+}
+
+.travel_stories {
+  margin-bottom: 100px;
 }
 
 .travel_stories h3 {

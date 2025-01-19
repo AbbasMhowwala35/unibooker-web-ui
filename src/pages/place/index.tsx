@@ -1,32 +1,22 @@
-import React from 'react';
-import location1 from '../../Images/locations/1.png';
-import location2 from '../../Images/locations/2.png';
-import location3 from '../../Images/locations/3.png';
-import location4 from '../../Images/locations/4.png';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PopularLocations from '../components/common/PopularLocations';
 import styles from "@/styles/Home.module.css";
 import { Jost } from 'next/font/google';
+import { useRouter } from 'next/router';
+import Loader from '../components/common/Loader';
+import api from '../api/api';
 // Define Jost font
 const jostFont = Jost({
   variable: "--font-jost",
   subsets: ["latin"],
 });
-
-const locations = [
-  { name: 'Location 1', image: location1 },
-  { name: 'Location 2', image: location2 },
-  { name: 'Location 3', image: location3 },
-  { name: 'Location 4', image: location4 },
-  { name: 'Location 1', image: location1 },
-  { name: 'Location 2', image: location2 },
-  { name: 'Location 3', image: location3 },
-  { name: 'Location 4', image: location4 },
-  { name: 'Location 1', image: location1 },
-  { name: 'Location 2', image: location2 },
-  { name: 'Location 3', image: location3 },
-  { name: 'Location 4', image: location4 },
-];
+interface Profile {
+  token: string;
+  id: string;
+  name: string;
+  email: string;
+}
 
 const sliderSettings = {
   dots: true,
@@ -45,7 +35,52 @@ const sliderSettings = {
   ],
 };
 
+
 export default function Place() {
+  const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [locationClicked, setLocationClicked] = useState<string | undefined>(undefined);
+  const [locations, setLocations] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+  const handleLocationClick = (cityName: string) => {
+    setLocationClicked(cityName)
+    sessionStorage.setItem("selectedCity", cityName);
+    router.push('/car-list')
+  };
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const storedData = localStorage.getItem('userData');
+    if (storedData) {
+      setProfile(JSON.parse(storedData));
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      setLoading(true)
+      try {
+        const response = await api.get('/yourLocations', {
+          params: {
+            token: profile?.token,
+          },
+        });
+        const { Locations } = response.data?.data || [];
+        setLocations(Locations);
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching availability data', error);
+        setLoading(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchWishlist();
+  }, [profile]);
+
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <section className={`${styles.popular_locations} ${jostFont.variable}`}>
       <h2 className={styles.main_heading}>Popular Locations</h2>
@@ -53,6 +88,7 @@ export default function Place() {
         locations={locations}
         sliderSettings={sliderSettings}
         variant="grid"
+        onLocationClick={handleLocationClick}
       />
       <Link className={styles.btn_link} href="/locations">
         Explore All

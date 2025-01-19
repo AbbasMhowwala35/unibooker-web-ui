@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactStrictMode: true,
+  images: {
+    domains: ['installer-vehicle.unibooker.app', 'vehicle.unibooker.app'],
+  },
 };
 
 export default nextConfig;

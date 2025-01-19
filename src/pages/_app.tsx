@@ -8,7 +8,8 @@ import { useState, useEffect } from "react";
 import Router from "next/router";
 import LoadingSkeleton from "./components/common/LoadingSkeleton";
 import { Jost } from "next/font/google";
-
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "react-toastify";
 const jostFont = Jost({
   variable: "--font-jost",
   subsets: ["latin"],
@@ -42,6 +43,7 @@ export default function App({ Component, pageProps }: AppProps) {
         </div>
       )}
       <Footer />
+      <ToastContainer />
     </AuthProvider>
   );
 }
