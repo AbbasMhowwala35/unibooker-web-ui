@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://installer-vehicle.unibooker.app/api/v1/";
+const API_BASE_URL = "https://vehicle.unibooker.app/api/v1/";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
