@@ -176,3 +176,22 @@ span.input-group-text {
 .react-calendar {
   width: 100% !important;
 }
+
+.PhoneInputCountry {
+  margin-right: -30px !important;
+  background: #f7f7f7;
+  border-radius: 10px;
+}
+
+.PhoneInputCountryIcon.PhoneInputCountryIcon--square {
+  margin-left: 60px;
+}
+
+.PhoneInputCountryIconUnicode {
+  margin-left: 70px;
+}
+
+input.PhoneInputInput:focus {
+  border: none !important;
+  outline: none !important;
+}
