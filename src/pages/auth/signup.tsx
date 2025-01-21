@@ -11,9 +11,9 @@ import api from "../api/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import { useRouter } from "next/router";
-import IntlTelInput from 'react-intl-tel-input';
-import 'react-intl-tel-input/dist/main.css';
-import { CountryData as IntlCountryData } from 'react-intl-tel-input';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
+import 'react-phone-number-input/style.css';
 
 const jostFont = Jost({
   variable: "--font-jost",
@@ -49,9 +49,6 @@ const Signup = () => {
   const [registrationData, setRegistrationData] = useState<RegistrationData | null>(null);
   const [timer, setTimer] = useState(300);
   const [resendEnabled, setResendEnabled] = useState(false);
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
-  };
 
   useEffect(() => {
     if (timer > 0) {
@@ -62,54 +59,24 @@ const Signup = () => {
     }
   }, [timer]);
 
-  // const handleEmailBlur = async () => {
-  //   const { email } = formData;
-  //   if (email) {
-  //     setLoading(true);
-  //     try {
-  //       const response = await api.post("/emailcheck", { email });
-  //       if (response.data && response.data.status === 200 && !response.data.error) {
-  //         setEmailError("");
-  //       } else {
-  //         setEmailError(response.data.message);
-  //       }
-  //     } catch (error) {
-  //       setEmailError("Error checking email.");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-  // };
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
 
-  // const handlePhoneBlur = async (phone: string, countryCode: string) => {
-  //   const payload = {
-  //     phone,
-  //     phone_country: +countryCode,
-  //   };
-  //   if (payload.phone && payload.phone_country) {
-  //     setLoading(true);
-  //     try {
-  //       const response = await api.post('/mobilecheck', payload);
-  //       if (response.data && response.data.status === 200 && !response.data.error) {
-  //         setPhoneError('');
-  //       } else {
-  //         setPhoneError(response.data.message);
-  //       }
-  //     } catch (error) {
-  //       setPhoneError('Error checking phone number.');
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-  // };
-
-  const handlePhoneChange = (isValid: boolean, value: string, countryData: IntlCountryData) => {
-    const dialCode = countryData.dialCode || ""; 
+  const handlePhoneChange = (value?: string) => {
+    const phoneValue = value || ''; // Default to empty string if undefined
+  
+    // You can extract the dial code from the phone number if needed
+    const dialCode = phoneValue.slice(0, phoneValue.indexOf(phoneValue[0] === '+' ? '+' : '')) || ''; 
+  
+    // Simulating country data (you may need a more specific implementation)
+    const countryData = { dialCode, iso2: "IN" };
+  
     setFormData((prevFormData) => ({
       ...prevFormData,
-      phone: value,
-      phone_country: dialCode,  
-      default_country: countryData.iso2 || "",
+      phone: phoneValue,
+      phone_country: dialCode, // Storing dialCode
+      default_country: countryData.iso2 || "", // Storing country code
     }));
   };
 
@@ -131,11 +98,6 @@ const Signup = () => {
         return false;
       }
 
-      if (!/^\d{10}$/.test(phone)) {
-        toast.error("Phone number must be 10 digits.");
-        return false;
-      }
-
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
         toast.error("Please enter a valid email address.");
@@ -148,19 +110,12 @@ const Signup = () => {
         return false;
       }
 
-      // const { confirmPassword } = formData;
-      // if (password !== confirmPassword) {
-      //   toast.error("Password and Confirm Password must match.");
-      //   return false;
-      // }
-
       return true;
     };
     if (!validateForm()) return;
     setLoading(true);
     setError("");
     setSuccess("");
-    // const { confirmPassword, ...dataToSend } = formData;
     try {
       const response = await api.post("/userRegister", formData);
       if (response.status === 200) {
@@ -176,7 +131,7 @@ const Signup = () => {
         toast.error('An unknown error occurred');
       }
     }
-      finally {
+    finally {
       setLoading(false);
     }
   };
@@ -208,7 +163,7 @@ const Signup = () => {
         toast.error('An unknown error occurred');
       }
     }
-  };  
+  };
 
   const handleOtpSubmit = async () => {
     if (!registrationData) {
@@ -239,7 +194,7 @@ const Signup = () => {
         toast.error('An unknown error occurred');
       }
     }
-  };  
+  };
   return (
     <>
       <div className={`${styles.page} ${jostFont.variable}`}>
@@ -307,19 +262,12 @@ const Signup = () => {
                               </clipPath>
                             </defs>
                           </svg>
-                          <IntlTelInput
+                          <PhoneInput
                             style={{ width: "100%" }}
-                            defaultCountry="ind"
+                            international
+                            defaultCountry="IN"
                             value={formData.phone}
-                            onPhoneNumberChange={handlePhoneChange}
-                            preferredCountries={['in']}
-                            telInputProps={{
-                              name: 'phone',
-                              required: true,
-                              autoFocus: true,
-                            }}
-                            containerClassName="intl-tel-input"
-                            inputClassName="form-control"
+                            onChange={handlePhoneChange}
                           />
                         </div>
                       </div>
@@ -393,27 +341,6 @@ const Signup = () => {
                           </span>
                         </div>
                       </div>
-                      {/* <div className={styles.formGroup}>
-                        <div className={styles.inputWithIcon}>
-                          <svg className={styles.icon} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M7 11.0002V7.00015C6.99876 5.7602 7.45828 4.56402 8.28938 3.64382C9.12047 2.72362 10.2638 2.14506 11.4975 2.02044C12.7312 1.89583 13.9671 2.23406 14.9655 2.96947C15.9638 3.70488 16.6533 4.785 16.9 6.00015" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          <input
-                            type={passwordVisible ? "text" : "password"}
-                            name="confirmPassword"
-                            placeholder="Confirm Password"
-                            required
-                            className={styles.authInput}
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            minLength={8}
-                          />
-                          <span className={styles.eyeIcon} onClick={togglePasswordVisibility}>
-                            {passwordVisible ? <FaEyeSlash /> : <FaEye />}
-                          </span>
-                        </div>
-                      </div> */}
                       <div className={styles.authLinks}>
                         <label className={styles.checkboxLabel}>
                           <input
@@ -476,8 +403,8 @@ const Signup = () => {
                           onClick={handleResendOtp}
                           disabled={!resendEnabled}
                         >
-                      {resendEnabled ? "Resend OTP" : `Resend OTP in ${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, "0")}`}
-                      </button>
+                          {resendEnabled ? "Resend OTP" : `Resend OTP in ${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, "0")}`}
+                        </button>
                       </div>
                       <button type="submit" className={styles.authButton} onClick={handleOtpSubmit}>Verify OTP</button>
                     </div>

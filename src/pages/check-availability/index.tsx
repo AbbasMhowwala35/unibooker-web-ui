@@ -10,6 +10,7 @@ import Calendar from 'react-calendar';
 import { FaCalendarAlt } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 import api from '../api/api';
+import { toast } from 'react-toastify';
 
 interface Profile {
     token: string;
@@ -20,6 +21,9 @@ interface Profile {
 interface AvailableDate {
     date: string;
     price: string;
+}
+interface BookingOverlapDetail {
+    start_time: string;
 }
 
 interface AvailabilityData {
@@ -32,15 +36,14 @@ const CheckAvailability = () => {
     const router = useRouter();
     const [fromDate, setFromDate] = useState<Date | null>(null);
     const [toDate, setToDate] = useState<Date | null>(null);
-    // const [guests, setGuests] = useState(1);
-    // const [note, setNote] = useState('');
     const [availabilityData, setAvailabilityData] = useState<AvailabilityData | null>(null);
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
     const [timeSlots, setTimeSlots] = useState<{ start: string, end: string }[]>([]);
     const [itemId, setItemId] = useState<string>('');
     const [profile, setProfile] = useState<Profile | null>(null);
-
+    const [isavailable, setIsAvailable] = useState<boolean>(false);
+    console.log(availabilityData)
     useEffect(() => {
         const storedData = localStorage.getItem('userData');
         if (storedData) {
@@ -61,37 +64,9 @@ const CheckAvailability = () => {
         }
     }, []);
 
-    useEffect(() => {
-        const currentTime = new Date();
-        currentTime.setMinutes(currentTime.getMinutes() + 30); // Start 30 minutes from now
-        const startTimeStr = currentTime.toISOString().split('T')[1].split('.')[0];
-        setStartTime(startTimeStr);
-
-        const nextDay = new Date(currentTime);
-        nextDay.setDate(currentTime.getDate() + 1);
-        nextDay.setHours(0, 0, 0, 0);
-        setEndTime(formatAMPM(nextDay)); // Set end time to 12:00 AM next day
-    }, []);
-
-    const formatAMPM = (date: Date) => {
-        let hours = date.getHours();
-        const minutes = date.getMinutes();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12; // The hour '0' should be '12'
-        const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-        return `${hours}:${formattedMinutes} ${ampm}`;
-    };
-
-    // const handleGuestChange = (change: number) => {
-    //     setGuests((prev) => Math.max(1, prev + change));
-    // };
-
     const handleRedirect = () => {
         router.push('/checkout');
     };
-
-
 
     const availableDates = availabilityData?.available_dates?.map((item: any) => item.date);
     const bookedDates = availabilityData?.booked_dates?.map((item: any) => item.date);
@@ -131,107 +106,65 @@ const CheckAvailability = () => {
         }
     };
 
+    function formatAMPM(date: Date): string {
+        if (isNaN(date.getTime())) {
+            return 'Invalid Time';
+        }
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+        return `${formattedHours}:${formattedMinutes} ${ampm}`;
+    }
+    
+
     const checkAvailability = async (selectedDate: Date) => {
         const selectedDateStr = selectedDate.toISOString().split('T')[0];
         const requestData = {
             item_id: itemId,
             check_in: selectedDateStr,
             check_out: selectedDateStr,
-            token: profile?.token
+            token: profile?.token,
         };
 
         try {
-            const response = await api.post('/checkBookingAvailability', requestData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
+            const response = await api.post('/checkBookingAvailability', requestData);
             const data = response.data.data;
-            if (data.status === 200 && data.data?.availability?.is_available) {
-                const nextStartTimeStr = data.data.availability.next_start_time;
-                const nextStartTime = new Date(`1970-01-01T${nextStartTimeStr}`);
-
-                // Generate time slots every 30 minutes starting from nextStartTime
-                const timeSlots: { start: string, end: string }[] = [];
-                for (let i = 0; i < 24 * 2; i++) { // 24 hours, each with 2 slots (30 min)
-                    const slotTime = new Date(nextStartTime);
-                    slotTime.setMinutes(nextStartTime.getMinutes() + i * 30);
-                    const endTime = new Date(slotTime);
-                    endTime.setMinutes(slotTime.getMinutes() + 30);
-
-                    // Push the time slot into the array
-                    timeSlots.push({
-                        start: formatAMPM(slotTime),
-                        end: formatAMPM(endTime)
-                    });
-                }
-
-                // Check for overlap details and exclude those slots from available time slots
-                const overlapDetails = data.data?.bookingOverlapDetails;
-                if (overlapDetails && overlapDetails.length > 0) {
-                    const bookedSlots = overlapDetails.map((detail: any) => detail.start_time);
-                    const availableSlots = timeSlots.filter(slot => !bookedSlots.includes(slot.start));
-                    if (availableSlots.length > 0) {
-                        setTimeSlots(availableSlots);
-                        setStartTime(availableSlots[0].start);
-                        setEndTime(availableSlots[0].end);
-                    } else {
-                        console.log('No available slots after filtering.');
+            const { availability } = data;
+            if (response.data.status === 200) {
+                if (availability.is_available) {
+                    setIsAvailable(true);
+                    const nextStartTimeStr = availability.next_start_time;
+                    const nextStartTime = new Date(`1970-01-01T${nextStartTimeStr}:00Z`);
+                    if (isNaN(nextStartTime.getTime())) {
+                        console.error('Invalid Date object for nextStartTime');
+                        return;
                     }
-                } else {
+                    const timeSlots: { start: string; end: string }[] = [];
+                    const startTime = new Date(nextStartTime);
+                    startTime.setMinutes(startTime.getMinutes() + 30);
+                    for (let i = 0; i < 48; i++) {
+                        const slotEnd = new Date(startTime);
+                        slotEnd.setMinutes(slotEnd.getMinutes() + 30);
+                        timeSlots.push({ start: formatAMPM(startTime), end: formatAMPM(slotEnd) });
+                        startTime.setMinutes(startTime.getMinutes() + 30);
+                    }
+                    console.log('Generated Time Slots:', timeSlots);
                     setTimeSlots(timeSlots);
-                    setStartTime(timeSlots[0].start);
-                    setEndTime(timeSlots[0].end);
+                    setStartTime(timeSlots[0]?.start || '');
+                    setEndTime(timeSlots[0]?.end || '');
                 }
             }
         } catch (error: any) {
+            setIsAvailable(false);
             if (error.response?.status === 422) {
-                const overlapDetails = error.response?.data?.data?.bookingOverlapDetails;
-                if (overlapDetails && overlapDetails.length > 0) {
-                    const bookedStartTime = new Date(`1970-01-01T${overlapDetails[0].start_time}`);
-                    const nextAvailableSlot = new Date(bookedStartTime);
-                    nextAvailableSlot.setMinutes(bookedStartTime.getMinutes() + 30);
-                    const nextEndSlot = new Date(nextAvailableSlot);
-                    nextEndSlot.setMinutes(nextAvailableSlot.getMinutes() + 30);
-                    const nextStartTimeStr = formatAMPM(nextAvailableSlot);
-                    const nextEndTimeStr = formatAMPM(nextEndSlot);
-                    setStartTime(nextStartTimeStr);
-                    setEndTime(nextEndTimeStr);
-                    setTimeSlots([{ start: nextStartTimeStr, end: nextEndTimeStr }]);
-                }
+                const overlapDetails = error.response.data.data.bookingOverlapDetails;
+                console.error("Overlapping dates: ", overlapDetails);
+                toast.error(`Booking unavailable for the selected dates: ${JSON.stringify(overlapDetails)}`);
             } else {
-                console.error("Error fetching availability:", error);
+                console.error("An unexpected error occurred: ", error);
             }
-        }
-    };
-
-    const handleSubmit = async () => {
-        const requestData = {
-            item_id: itemId,
-            check_in: fromDate ? fromDate.toISOString().split('T')[0] : '',
-            check_out: toDate ? toDate.toISOString().split('T')[0] : '',
-            start_time: startTime,
-            end_time: endTime,
-            token: profile?.token
-        };
-
-        try {
-            const response = await api.post('/checkBookingAvailability', requestData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            const data = response.data.data;
-            if (data.status === 200) {
-                console.log("Booking successful", data);
-                handleRedirect();
-            } else {
-                console.log("Booking failed", data);
-            }
-        } catch (error) {
-            console.error("Error submitting booking:", error);
         }
     };
 
@@ -299,43 +232,51 @@ const CheckAvailability = () => {
                                         </InputGroup>
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-6 mb-4">
-                                    <Form.Group controlId="startTime">
-                                        <Form.Label>Start Time</Form.Label>
-                                        <Form.Control
-                                            as="select"
-                                            value={startTime}
-                                            onChange={(e) => setStartTime(e.target.value)}
-                                        >
-                                            {timeSlots.map((slot, index) => (
-                                                <option key={index} value={slot.start}>
-                                                    {slot.start}
-                                                </option>
-                                            ))}
-                                        </Form.Control>
-                                    </Form.Group>
-                                </div>
-                                {/* End Time Input */}
-                                <div className="col-md-6 mb-4">
-                                    <Form.Group controlId="endTime">
-                                        <Form.Label>End Time</Form.Label>
-                                        <Form.Control
-                                            as="select"
-                                            value={endTime}
-                                            onChange={(e) => setEndTime(e.target.value)}
-                                        >
-                                            {timeSlots.map((slot, index) => (
-                                                <option key={index} value={slot.end}>
-                                                    {slot.end}
-                                                </option>
-                                            ))}
-                                        </Form.Control>
-                                    </Form.Group>
-                                </div>
+                                {isavailable && (
+                                    <>
+                                        <div className="col-md-6 mb-4">
+                                            <Form.Group controlId="startTime">
+                                                <Form.Label>Start Time</Form.Label>
+                                                <Form.Control
+                                                    as="select"
+                                                    value={startTime}
+                                                    onChange={(e) => setStartTime(e.target.value)}
+                                                >
+                                                    {timeSlots.length > 0 ? (
+                                                        timeSlots.map((slot, index) => (
+                                                            <option key={index} value={slot.start}>
+                                                                {slot.start}
+                                                            </option>
+                                                        ))
+                                                    ) : (
+                                                        <option disabled>No available time slots</option>
+                                                    )}
+                                                </Form.Control>
+                                            </Form.Group>
+                                        </div>
+
+                                        <div className="col-md-6 mb-4">
+                                            <Form.Group controlId="endTime">
+                                                <Form.Label>End Time</Form.Label>
+                                                <Form.Control
+                                                    as="select"
+                                                    value={endTime}
+                                                    onChange={(e) => setEndTime(e.target.value)}
+                                                >
+                                                    {timeSlots.map((slot, index) => (
+                                                        <option key={index} value={slot.end}>
+                                                            {slot.end}
+                                                        </option>
+                                                    ))}
+                                                </Form.Control>
+                                            </Form.Group>
+                                        </div>
+                                    </>
+                                )}
                                 <div className="col-md-6">
-                                    <Button variant="primary" onClick={handleSubmit}>
+                                    {/* <Button variant="primary" onClick={handleSubmit}>
                                         Book Now
-                                    </Button>
+                                    </Button> */}
                                 </div>
                             </div>
                         </Form>
