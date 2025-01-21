@@ -47,6 +47,10 @@ const Header = () => {
     setSearchQuery(e.target.value);
   };
 
+  const handleLogoClicked = async () => {
+    sessionStorage.clear()
+  };
+
   const isLoggedIn = profile !== null;
 
   return (
@@ -71,7 +75,7 @@ const Header = () => {
         <div className={`container d-flex justify-content-between align-items-center ${styles.headerContainer}`}>
           <div className="logo-section">
             <div className="logo-img">
-              <Link href="/">
+              <Link href="/" onClick={handleLogoClicked}>
                 <Image src={logo} className={styles['logo']} alt="UniBooker" />
               </Link>
             </div>

@@ -159,10 +159,12 @@
     justify-content: space-between;
 }
 
+.BookingDetailsRowHead {
+    width: 200px;
+}
+
 .BookingImage {
     width: 100%;
-    height: 200px;
-    object-fit: cover;
     border-radius: 10px;
 }
 
@@ -178,6 +180,9 @@
 .BookingLocation {
     color: #777;
     font-size: 14px;
+    gap: 10px;
+    display: flex;
+    align-items: center;
 }
 
 .BookingDistance {

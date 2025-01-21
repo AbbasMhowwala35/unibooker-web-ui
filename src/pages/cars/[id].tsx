@@ -86,6 +86,7 @@ const CarDetails = () => {
             router.push('/check-availability');
             sessionStorage.setItem("availability", JSON.stringify(ItemDates))
             sessionStorage.setItem("itemId", carDetails?.id || "");
+            sessionStorage.setItem("carDetails", JSON.stringify(carDetails || ""));
         } catch (error) {
             console.error('Error fetching availability data', error);
         }

@@ -2,34 +2,184 @@ import Head from "next/head";
 import { Jost } from "next/font/google";
 import styles from "../../styles/Checkout.module.css";
 import Newsletter from "../components/common/Newsletter";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Modal, Row } from "react-bootstrap";
 import Image from "next/image";
-import car from '../../Images/car.png'
 import wishlist from '../../Images/wishlist.svg'
 import location from '../../Images/location.svg'
 import { BsStarFill } from "react-icons/bs";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import Loader from "../components/common/Loader";
+import api from "../api/api";
+interface CheckoutPriceDetails {
+    total: number;
+    duration: string,
+    per_night: string,
+    service_charge: string,
+    security_money: string,
+    iva_tax: string,
+    totalPrice: string,
+    price_per_night: string,
+    base_price: string,
+    cleaning_charge: string;
+    tax: string,
+    label: string
+  }
 // Define Jost font
 const jostFont = Jost({
     variable: "--font-jost",
     subsets: ["latin"],
 });
+interface CarDetails {
+    id: number;
+    name: string;
+    image: string;
+    address: string;
+    price: string;
+    item_rating: string;
+    checkInDate: string;
+    checkOutDate: string;
+    start_time: string;
+    endTime: string;
+    doorstep_delivery: boolean;
+    item_info: {
+        host_id: string;
+        host_profile_image: string;
+        host_first_name: string;
+        host_last_name: string;
+        odometer: string;
+        year: string;
+        transmission: string;
+        vehicleType: string;
+        description: string;
+        rules: string[];
+        cancellation_reason_title: string,
+        cancellation_reason_description: string[];
+        gallery_image_urls: string[];
+    };
+}
 
 export default function Home() {
     const router = useRouter();
+    const [checkoutDetails, setCheckoutDetails] = useState<CarDetails | null>(null);
+    const [checkoutPriceDetails, setCheckoutPriceDetails] = useState<CheckoutPriceDetails | null>(null);
+    const [showRulesModal, setShowRulesModal] = useState(false);
+    const [userWalletDetails, setUserWalletDetails] = useState();
+    const [showCancellationModal, setShowCancellationModal] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [doorstepDelivery, setDoorstepDelivery] = useState(false);
+
+    useEffect(() => {
+        const storedCheckoutDetails = sessionStorage.getItem('checkoutDetails');
+        if (storedCheckoutDetails) {
+            const parsedDetails = JSON.parse(storedCheckoutDetails);
+            setCheckoutDetails(parsedDetails)
+        }
+        const fetchUserWallet = async () => {
+            setLoading(true)
+            try {
+
+                const response = await api.get('/getUserWallet');
+                setUserWalletDetails(response.data.data.wallet_balance)
+                setLoading(false)
+            } catch (error) {
+                console.error('Error fetching availability data', error);
+                setLoading(true)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchUserWallet()
+        if (checkoutDetails && userWalletDetails) {
+            fetchItemPrices()
+        }
+    }, [userWalletDetails]);
+
+    const fetchItemPrices = async () => {
+        setLoading(true)
+        try {
+            const payload = {
+                item_id: checkoutDetails?.id,
+                check_in: checkoutDetails?.checkInDate,
+                check_out: checkoutDetails?.checkOutDate,
+                start_time: checkoutDetails?.start_time,
+                end_time: checkoutDetails?.endTime,
+                wallet_amount: userWalletDetails,
+                doorstep_delivery: doorstepDelivery ? 1 : 0,
+            };
+            const response = await api.post('/getItemPrices', payload);
+            setCheckoutPriceDetails(response.data.data)
+            setLoading(false)
+        } catch (error) {
+            console.error('Error fetching availability data', error);
+            setLoading(true)
+        } finally {
+            setLoading(false)
+        }
+    }
     
-    const handleRedirect = () => {
-        router.push('/customer-reciept');  
+    const handleBookItem = async () => {
+        const bookingPayload = {
+            item_id: checkoutDetails?.id,
+            check_in: checkoutDetails?.checkInDate,
+            check_out: checkoutDetails?.checkOutDate,
+            total_night: checkoutPriceDetails?.duration,
+            per_night: checkoutPriceDetails?.price_per_night,
+            base_price: checkoutPriceDetails?.price_per_night,
+            service_charge: checkoutPriceDetails?.service_charge,
+            security_money: checkoutPriceDetails?.security_money || "0",
+            iva_tax: checkoutPriceDetails?.iva_tax || "0",
+            total: checkoutPriceDetails?.totalPrice || "0",
+            payment_method: "stripe",
+            wall_amt: userWalletDetails || "0",
+            host_id: checkoutDetails?.item_info.host_id || null,
+            coupon_code: "",
+            discount_price: "0",
+            coupon_discount: "0",
+            discount_type: "",
+            cleaning_charges: checkoutPriceDetails?.cleaning_charge || "0",
+            start_time: checkoutDetails?.start_time || "6:00 AM",
+            end_time: checkoutDetails?.endTime || "7:30 AM",
+            onlinepayment: "Active",
+            doorStep_price: "40",
+        };
+
+        try {
+            setLoading(true);
+            const response = await api.post('/bookItem', bookingPayload);
+            if (response.data.status === 200) {
+                const paymentUrl = response.data.data.payment_url;
+                router.push(paymentUrl);
+            } else {
+                console.error('Booking failed:', response.data.message);
+            }
+        } catch (error) {
+            console.error("Error booking item", error);
+            setLoading(false);
+        }
     };
+
+    const handleClose = () => {
+        setShowRulesModal(false);
+        setShowCancellationModal(false);
+    };
+
+    const handleShowRules = () => setShowRulesModal(true);
+    const handleShowCancellation = () => setShowCancellationModal(true);
+    const handleDoorstepDeliveryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setDoorstepDelivery(event.target.checked);
+        fetchItemPrices()
+    };
+
+    if (loading) {
+        return <Loader />;
+    }
 
     return (
         <div className={`${styles.page} ${jostFont.variable}`}>
             <Head>
                 <title>Unibooker | Review Summary</title>
-                <meta name="description" content="Generated by create next app" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="icon" href="/favicon.ico" />
             </Head>
             <div className={`${styles.checkoutMainSection}`}>
                 <Container>
@@ -40,17 +190,17 @@ export default function Home() {
                         <Col md={6}>
                             <div className={styles.checkoutImgSection}>
                                 <div className={styles.checkoutImgSectionBlock}>
-                                    <Image src={car} className="img-fluid mb-4" alt="Car" />
+                                    <Image src={checkoutDetails?.image || ''} width={500} height={500} className="img-fluid mb-4" alt="Car" />
                                     <Image src={wishlist} className={styles.checkoutImgSectionBlockWishlist} alt="wishlist" />
                                 </div>
                                 <div className={styles.checkoutContentSectionBlock}>
                                     <div className={styles.checkoutContentHeadingBlock}>
-                                        <h4>Asteria hotel</h4>
-                                        <p><Image src={location} alt="Location" />Wilora NT 0872, Australia</p>
+                                        <h4>{checkoutDetails?.name}</h4>
+                                        <p><Image src={location} alt="Location" />{checkoutDetails?.address}</p>
                                     </div>
                                     <div className={styles.checkoutContentDetailBlock}>
-                                        <h6>$165,3 <span>/Night</span></h6>
-                                        <p>5.0<BsStarFill /></p>
+                                        <h6>${checkoutDetails?.price} <span>/Night</span></h6>
+                                        <p>{checkoutDetails?.item_rating}<BsStarFill /></p>
                                         <small>12km</small>
                                     </div>
                                 </div>
@@ -61,43 +211,47 @@ export default function Home() {
                                 <div className={styles.checkoutRightSectionContent}>
                                     <h3>Your Trip</h3>
                                     <div className={styles.checkoutContentSectionRow}>
-                                        <h6>Check In <span>2024-04-15</span></h6>
-                                        <p>Check Out <span>2024-04-15</span></p>
+                                        <h6>Check In <span>{checkoutDetails?.checkInDate}</span></h6>
+                                        <p>Check Out <span>{checkoutDetails?.checkOutDate}</span></p>
                                     </div>
-                                    <div className={styles.checkoutContentSectionRow}>
-                                        <h6>Number of Guests</h6>
-                                        <p>3</p>
-                                    </div>
-                                    <div className={styles.checkoutContentSectionRow}>
-                                        <h6>Booking For Someone </h6>
-                                        <p>N/A</p>
+                                    <div className={styles.doorstepDeliverySection}>
+                                        <h6>Doorstep Delivery</h6>
+                                        <div className={styles.doorstepDeliverySectionInput}>
+                                            <input
+                                                type="checkbox"
+                                                checked={doorstepDelivery}
+                                                onChange={handleDoorstepDeliveryChange}
+                                            />
+                                            <label>Choose Doorstep Delivery</label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className={styles.checkoutRightSectionContent}>
                                     <h3>Price Details</h3>
                                     <div className={styles.checkoutContentSectionRow}>
-                                        <h6>Price (1night)</h6>
-                                        <p className={styles.greenText}>USD 500.00</p>
+                                        <h6>Price (1night) for {checkoutPriceDetails?.duration} {checkoutPriceDetails?.label}</h6>
+                                        <p className={styles.greenText}>USD {checkoutPriceDetails?.price_per_night}</p>
                                     </div>
                                     <div className={styles.checkoutContentSectionRow}>
                                         <h6>Service Charge</h6>
-                                        <p>USD 10.00</p>
+                                        <p>USD {checkoutPriceDetails?.service_charge} </p>
                                     </div>
                                     <div className={styles.checkoutContentSectionRow}>
                                         <h6>Cleaning Charge</h6>
-                                        <p>USD 10.00</p>
+                                        <p>USD {checkoutPriceDetails?.cleaning_charge} </p>
                                     </div>
                                     <div className={styles.checkoutContentSectionRow}>
                                         <h6>Tax</h6>
-                                        <p>USD 10.00</p>
+                                        <p>USD {checkoutPriceDetails?.tax} </p>
                                     </div>
                                     <div className={`${styles.checkoutContentSectionRow} ${styles.TotalPrice}`}>
                                         <h6>Total Price</h6>
-                                        <p>USD 545.00</p>
+                                        <p>USD {checkoutPriceDetails?.totalPrice}</p>
                                     </div>
+
                                 </div>
                                 <div className={styles.checkoutRightSectionPolicy}>
-                                    <div className={styles.checkoutRightSectionPolicyBox}>
+                                    <div className={styles.checkoutRightSectionPolicyBox} onClick={handleShowRules} data-bs-toggle="modal" data-bs-target="#rulesModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                             <g clipPath="url(#clip0_1966_5371)">
                                                 <g clipPath="url(#clip1_1966_5371)">
@@ -134,7 +288,7 @@ export default function Home() {
                                     </div>
                                 </div>
                                 <div className={styles.checkoutRightSectionPolicy}>
-                                    <div className={styles.checkoutRightSectionPolicyBox}>
+                                    <div className={styles.checkoutRightSectionPolicyBox} onClick={handleShowCancellation} data-bs-toggle="modal" data-bs-target="#cancellationModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
                                             <path d="M4 9.13281H20" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                             <path d="M4 15.1328H20" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -158,12 +312,48 @@ export default function Home() {
                                 </div>
                                 <div className={styles.checkoutRightSectionPolicyContent}>
                                     <p>By selecting the button below, I agree to the <Link href="/">Hosts&apos;s Rules</Link>,  <Link href="/">Ground rules for quest</Link>,  <Link href="/">UniBooker&apos;s Rebooking </Link>and  <Link href="/">Refund Policy </Link>and that UniBooker can  <Link href="/">charge my Payment </Link>method if I&apos;m responsible for damage. I agree to pay the total amount shown if the Host accepts my booking request.</p>
-                                    <Button type="button" onClick={handleRedirect} className={styles.payNowButton}>Pay Now</Button>
+                                    <Button type="button" onClick={handleBookItem} className={styles.payNowButton}>Pay Now</Button>
                                 </div>
                             </div>
                         </Col>
                     </Row>
                 </Container>
+                {/* House Rules Modal */}
+                <Modal show={showRulesModal} onHide={handleClose}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>House Rules</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ul>
+                            {checkoutDetails?.item_info.rules.map((rule: string, index: number) => (
+                                <li key={index}>{rule}</li>
+                            ))}
+                        </ul>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                            Close
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+                {/* Cancellation Policy Modal */}
+                <Modal show={showCancellationModal} onHide={handleClose}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>{checkoutDetails?.item_info.cancellation_reason_title}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ul>
+                            {checkoutDetails?.item_info.cancellation_reason_description?.map((desc, index) => (
+                                <li key={index}>{desc}</li>
+                            ))}
+                        </ul>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                            Close
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
             <Newsletter />
         </div>
