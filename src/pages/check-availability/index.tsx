@@ -43,7 +43,6 @@ const CheckAvailability = () => {
     const [itemId, setItemId] = useState<string>('');
     const [profile, setProfile] = useState<Profile | null>(null);
     const [isavailable, setIsAvailable] = useState<boolean>(false);
-    console.log(availabilityData)
     useEffect(() => {
         const storedData = localStorage.getItem('userData');
         if (storedData) {

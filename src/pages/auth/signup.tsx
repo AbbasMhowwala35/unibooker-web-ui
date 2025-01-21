@@ -13,7 +13,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { useRouter } from "next/router";
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import 'react-phone-number-input/style.css';
+import parsePhoneNumberFromString, { parsePhoneNumberWithError } from 'libphonenumber-js'
 
 const jostFont = Jost({
   variable: "--font-jost",
@@ -64,20 +64,24 @@ const Signup = () => {
   };
 
   const handlePhoneChange = (value?: string) => {
-    const phoneValue = value || ''; // Default to empty string if undefined
-  
-    // You can extract the dial code from the phone number if needed
-    const dialCode = phoneValue.slice(0, phoneValue.indexOf(phoneValue[0] === '+' ? '+' : '')) || ''; 
-  
-    // Simulating country data (you may need a more specific implementation)
-    const countryData = { dialCode, iso2: "IN" };
-  
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      phone: phoneValue,
-      phone_country: dialCode, // Storing dialCode
-      default_country: countryData.iso2 || "", // Storing country code
-    }));
+    const phoneValue = value || ''; 
+    const parsedPhoneNumber = parsePhoneNumberFromString(phoneValue);
+    if (parsedPhoneNumber) {
+      const phoneNumber = parsedPhoneNumber.nationalNumber;
+      const dialCode = parsedPhoneNumber.countryCallingCode ? `+${parsedPhoneNumber.countryCallingCode}` : ''; 
+      const countryCode = parsedPhoneNumber.country || ''; 
+      setFormData((prevFormData) => {
+        const updatedFormData = {
+          ...prevFormData,
+          phone: phoneNumber, 
+          phone_country: dialCode,
+          default_country: countryCode, 
+        };
+        return updatedFormData;
+      });
+    } else {
+      console.error('Invalid phone number');
+    }
   };
 
   const handleCheckboxChange = () => {
@@ -263,11 +267,12 @@ const Signup = () => {
                             </defs>
                           </svg>
                           <PhoneInput
-                            style={{ width: "100%" }}
+                            countrySelectProps={{ unicodeFlags: true }}
+                            value={formData.phone_country}
+                            withCountryCallingCode
                             international
-                            defaultCountry="IN"
-                            value={formData.phone}
-                            onChange={handlePhoneChange}
+                            country={formData.default_country} 
+                            onChange={handlePhoneChange} 
                           />
                         </div>
                       </div>

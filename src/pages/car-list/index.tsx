@@ -70,32 +70,25 @@ const Index = () => {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
     useEffect(() => {
-        const userData = localStorage.getItem("userData");
-        const parsedUserData = userData ? JSON.parse(userData) : null;
-        const token = parsedUserData?.token || "";
-        if (token) {
-            const fetchData = async () => {
-                try {
-                    const response = await api.get("/homeData", {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
-                    const mergedData = [
-                        ...response.data.data.nearby_items,
-                        ...response.data.data.featured_items,
-                        ...response.data.data.new_arrival_items,
-                    ];
-                    setHomeData(mergedData);
-                    setFilteredData(mergedData);
-                    setMakes(response.data.data.makes || []);
-                    setItemTypes(response.data.data.itemTypes || []);
-                } catch (error) {
-                    console.error("Error fetching home data:", error);
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchData();
-        }
+        const fetchData = async () => {
+            try {
+                const response = await api.get("/homeData");
+                const mergedData = [
+                    ...response.data.data.nearby_items,
+                    ...response.data.data.featured_items,
+                    ...response.data.data.new_arrival_items,
+                ];
+                setHomeData(mergedData);
+                setFilteredData(mergedData);
+                setMakes(response.data.data.makes || []);
+                setItemTypes(response.data.data.itemTypes || []);
+            } catch (error) {
+                console.error("Error fetching home data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, []);
 
     useEffect(() => {
@@ -108,11 +101,11 @@ const Index = () => {
             const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(makeType);
             const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(car.item_type_id.toString());
             const matchesCity = !selectedCity || car.city === selectedCity;
-    
+
             return matchesBrandInSession && matchesBrand && matchesCategory && matchesCity;
         });
         setFilteredData(filtered);
-    }, [selectedBrands, selectedCategories, homeData]);    
+    }, [selectedBrands, selectedCategories, homeData]);
 
     const handleBrandChange = (brand: string) => {
         setSelectedBrands((prev) =>

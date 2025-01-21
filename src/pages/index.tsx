@@ -154,15 +154,9 @@ export default function Home() {
   
 
   useEffect(() => {
-    const userData = localStorage.getItem("userData");
-    const parsedUserData = userData ? JSON.parse(userData) : null;
-    const token = parsedUserData?.token || "";
-    if (token) {
       const fetchData = async () => {
         try {
-          const response = await api.get("/homeData", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const response = await api.get("/homeData");
           setHomeData(response.data.data);
           setLoading(false);
         } catch (error) {
@@ -171,7 +165,6 @@ export default function Home() {
         }
       };
       fetchData();
-    }
   }, []);
 
   const handleLocationClick = (cityName: string) => {
