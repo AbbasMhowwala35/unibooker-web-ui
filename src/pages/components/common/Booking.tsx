@@ -7,6 +7,8 @@ import { FaEnvelope, FaPhoneAlt } from "react-icons/fa";
 import { MdArrowForward, MdArrowBack } from "react-icons/md";
 import api from "@/pages/api/api";
 import { useRouter } from "next/router";
+import { Modal } from "react-bootstrap";
+import { toast, ToastContainer } from "react-toastify";
 
 interface Booking {
   id: number;
@@ -76,6 +78,13 @@ type BookingData = {
   cancelled: Booking[];
 };
 
+interface CancelReason {
+  id: string;
+  name: string;
+  reason: string;
+  order_cancellation_id: number
+}
+
 const Booking = () => {
   const router = useRouter();
   const [bookings, setBookings] = useState<BookingData>({
@@ -86,6 +95,11 @@ const Booking = () => {
 
   const [activeTab, setActiveTab] = useState<'upcoming' | 'previous' | 'cancelled'>('upcoming');
   const [currentPage, setCurrentPage] = useState(1);
+  const [cancelReasons, setCancelReasons] = useState<CancelReason[]>([]);
+  const [selectedReason, setSelectedReason] = useState<string | number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentBookingId, setCurrentBookingId] = useState<number | null>(null);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const bookingsPerPage = 5;
 
   const fetchBookings = async () => {
@@ -105,16 +119,16 @@ const Booking = () => {
           cancelled: bookings.filter(booking => booking.status === "Cancelled") || [],
         });
       } else {
-        console.error("Error fetching booking records:", response.data.message);
+        toast.error("Error fetching booking records:", response.data.message);
       }
-    } catch (error) {
-      console.error("Error fetching booking data:", error);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error('An unknown error occurred');
+      }
     }
   };
-
-  useEffect(() => {
-    fetchBookings();
-  }, []);
 
   const currentBookings = bookings[activeTab].slice(
     (currentPage - 1) * bookingsPerPage,
@@ -129,6 +143,79 @@ const Booking = () => {
     sessionStorage.setItem('bookingData', JSON.stringify(booking));
     router.push('/customer-reciept');
   };
+
+  const fetchCancelReasons = async () => {
+    try {
+      const userType = "user";
+      const response = await api.get(`/getCancelReasons?userType=${userType}`);
+      if (response.data.status === 200) {
+        const reasons: CancelReason[] = response.data?.data?.reasons || [];
+        if (reasons.length === 0) {
+          toast.error("No cancellation reasons are available. Please contact support.");
+        } else {
+          setCancelReasons(reasons);
+          setIsModalOpen(true);
+        }
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error('An unknown error occurred');
+      }
+    }
+  };
+
+  const openCancelModal = (bookingId: number) => {
+    setCurrentBookingId(bookingId);
+    setIsModalOpen(true);
+    fetchCancelReasons();
+  };
+
+  const handleCancelBooking = async () => {
+    if (!currentBookingId) return;
+    const ticketData = {
+      booking_id: currentBookingId,
+      cancellation_reasion: selectedReason,
+    };
+
+    try {
+      const response = await api.post('/cancelBookingByUser', ticketData);
+      if (response.data.status === 200) {
+        toast.success("Booking cancelled successfully.");
+        setIsModalOpen(false);
+        fetchBookings();
+      } else {
+        toast.error("Error cancelling booking:", response.data.message);
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error('An unknown error occurred');
+      }
+    }
+  };
+
+  const openConfirmationModal = () => {
+    setIsConfirmationOpen(true);
+  };
+
+  const handleConfirmation = () => {
+    handleCancelBooking();
+    setIsConfirmationOpen(false);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setIsConfirmationOpen(false);
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
   return (
     <div className={styles.ProfileChildCard}>
@@ -201,7 +288,7 @@ const Booking = () => {
                       </p>
                     </div>
                     <div className={styles.BookingActions}>
-                      <button className={styles.CancelButton}>Cancel</button>
+                      <button className={styles.CancelButton} onClick={() => openCancelModal(booking.id)}>Cancel</button>
                       <button onClick={() => handleEReceiptClick(booking)} className={styles.EReceiptButton}>E-Receipt</button>
                     </div>
                   </div>
@@ -238,6 +325,61 @@ const Booking = () => {
           </div>
         )}
       </div>
+      <Modal show={isModalOpen} onHide={closeModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Select a reason for cancellation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <select
+            className="form-control"
+            value={selectedReason ?? ""}
+            onChange={(e) => setSelectedReason(Number(e.target.value))}
+          >
+            <option value="" disabled>Select reason</option>
+            {cancelReasons.map((reason) => (
+              <option key={reason.order_cancellation_id} value={reason.order_cancellation_id}>
+                {reason.reason}
+              </option>
+            ))}
+          </select>
+        </Modal.Body>
+        <Modal.Footer>
+          <button
+            className="btn btn-primary"
+            onClick={openConfirmationModal}
+          >
+            Proceed
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={closeModal}
+          >
+            Close
+          </button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Bootstrap Modal for confirmation */}
+      <Modal show={isConfirmationOpen} onHide={closeModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Are you sure you want to cancel this booking?</Modal.Title>
+        </Modal.Header>
+        <Modal.Footer>
+          <button
+            className="btn btn-danger"
+            onClick={handleConfirmation}
+          >
+            Yes
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={closeModal}
+          >
+            No
+          </button>
+        </Modal.Footer>
+      </Modal>
+      <ToastContainer />
     </div>
   );
 };

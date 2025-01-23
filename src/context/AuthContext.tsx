@@ -7,6 +7,7 @@ interface AuthContextProps {
   login: (userData: { name: string; email: string }) => void;
   logout: () => void;
   settings: Settings | null;
+  loginWithGoogle: (userData: UserData) => void;
 }
 
 interface Settings {
@@ -51,6 +52,18 @@ interface Profile {
   id: string;
   name: string;
   email: string;
+}
+interface UserData {
+  displayName: string;
+  email: string;
+  id: string;
+  profile_image: string;
+  login_type: string;
+  identityToken: string;
+  authorizationCode: string;
+  token: string;
+  module_id: string;
+  time_zone: string;
 }
 
 const AuthContext = createContext<AuthContextProps | null>(null);
@@ -121,6 +134,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      const response = await api.post("/socialLogin");
+      const data = await response.data;
+      setUser(data);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
   // const validateUser = async () => {
   //   if (profile && profile.token) {
   //     try {
@@ -138,7 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   //   }
   // };
 
-  return <AuthContext.Provider value={{ user, login, logout, settings }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, login, logout, settings, loginWithGoogle }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

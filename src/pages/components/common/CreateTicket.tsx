@@ -39,9 +39,9 @@ const CreateTicket = () => {
                         <div className={styles.ProfileCreateTicket}>
                             <h4>
                                 {/* <input type="checkbox" className='checkInput' id="terms" /> */}
-                                Accept the <Link href="/">Terms and Conditions</Link>
+                                Create <Link href="/">Ticket</Link>
                             </h4>
-
+                            <p>Welcome! Heres what you need to know about your tickets.</p>
                             <hr />
                             {/* <p>
                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.

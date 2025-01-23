@@ -1,17 +1,18 @@
 import Link from "next/link";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import Newsletter from "../components/common/Newsletter";
 import styles from "@/styles/Auth.module.css";
 import Image from "next/image";
 import loginimg from "../../Images/login.png";
 import { Jost } from "next/font/google";
 import { useEffect, useState } from "react";
-import { FaEye, FaEyeSlash, FaGoogle, FaApple } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import api from "../api/api";
 import changePassword from '../../Images/changePassword.svg';
+import GoogleLogin from "./google-login";
 
 const jostFont = Jost({
   variable: "--font-jost",
@@ -226,15 +227,7 @@ const Login = () => {
                       </button>
                     </form>
                     {/* Sign In with Google/Apple */}
-                    <div className={styles.socialSignIn}>
-                      <p>Or Sign in with</p>
-                      <Button className={styles.socialButton} variant="outline-dark">
-                        <FaGoogle className={styles.socialIcon} />
-                      </Button>
-                      <Button className={styles.socialButton} variant="outline-dark">
-                        <FaApple className={styles.socialIcon} />
-                      </Button>
-                    </div>
+                    <GoogleLogin />
                     {/* Sign Up Option */}
                     <div className={styles.authLinks}>
                       <p>Don&apos;t have an account?<Link href="/auth/signup"> Sign up</Link></p>

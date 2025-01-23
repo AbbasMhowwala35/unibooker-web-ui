@@ -1,43 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from "../../../styles/Profile.module.css";
+import api from '@/pages/api/api';
+interface Ticket {
+    id: number;
+    user_id: string;
+    thread_id: string;
+    thread_status: string;
+    title: string;
+    description: string;
+    module: number;
+    created_at: string;
+    updated_at: string;
+}
 
 const Tickets = () => {
     const [activeTab, setActiveTab] = useState("Open");
-    const openTickets = [
-        {
-            id: 1,
-            title: "Ticket 1",
-            description: "Issue with login functionality",
-            deliveredTime: "12:30 PM",
-            deliveredDate: "2024-12-21",
-        },
-        {
-            id: 2,
-            title: "Ticket 2",
-            description: "Bug in payment gateway",
-            deliveredTime: "02:00 PM",
-            deliveredDate: "2024-12-20",
-        },
-    ];
+    const [openTickets, setOpenTickets] = useState<Ticket[]>([]);
+    const [closedTickets, setClosedTickets] = useState<Ticket[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const closedTickets = [
-        {
-            id: 3,
-            title: "Ticket 3",
-            description: "Feature request: Dark mode",
-            deliveredTime: "11:00 AM",
-            deliveredDate: "2024-12-15",
-        },
-        {
-            id: 4,
-            title: "Ticket 4",
-            description: "UI issue in dashboard",
-            deliveredTime: "01:30 PM",
-            deliveredDate: "2024-12-10",
-        },
-    ];
+    const fetchTickets = async () => {
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await api.get('/getUserThreads');
+            if (response.status === 200 && response.data) {
+                const threads: Ticket[] = response.data.data.threads || [];
+                const open = threads.filter((thread) => thread.thread_status === "1");
+                const closed = threads.filter((thread) => thread.thread_status !== "1");
+
+                setOpenTickets(open);
+                setClosedTickets(closed);
+            } else {
+                setError("Failed to fetch tickets.");
+            }
+        } catch (err) {
+            setError("An error occurred while fetching tickets.");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchTickets();
+    }, []);
 
     const tickets = activeTab === "Open" ? openTickets : closedTickets;
+
     return (
         <div className={styles.ProfileChildCard}>
             <h3>Tickets</h3>
@@ -58,24 +70,36 @@ const Tickets = () => {
                         </button>
                     </div>
                 </div>
-                <div className={styles.ReviewsGrid}>
-                    {tickets.map((ticket) => (
-                        <div key={ticket.id} className={styles.ReviewCard}>
-                            <div className={styles.ReviewCardHeader}>
-                                <div className={styles.ReviewCardHeaderAvtar}>
-                                    <div className={`${styles.ReviewCardInfo} ${styles.TicketInfo}`}>
-                                        <h4>Ticket: {ticket.id}</h4>
-                                        <h6>{ticket.title}</h6>
-                                        <p>{ticket.description}</p>
+                {loading ? (
+                    <p>Loading tickets...</p>
+                ) : error ? (
+                    <p className={styles.Error}>{error}</p>
+                ) : tickets.length > 0 ? (
+                    <div className={styles.ReviewsGrid}>
+                        {tickets.map((ticket) => (
+                            <div key={ticket.id} className={styles.ReviewCard}>
+                                <div className={styles.ReviewCardHeader}>
+                                    <div className={styles.ReviewCardHeaderAvtar}>
+                                        <div className={`${styles.ReviewCardInfo} ${styles.TicketInfo}`}>
+                                            <h4>Ticket: {ticket.thread_id}</h4>
+                                            <h6>{ticket.title}</h6>
+                                            <p>{ticket.description}</p>
+                                        </div>
+                                    </div>
+                                    <div className={styles.ReviewsInfo}>
+                                        <p className={styles.ReviewDate}>
+                                            <span className={styles.deliveredText}>Created on </span>
+                                            {new Date(ticket.created_at).toLocaleDateString()} <br />
+                                            {new Date(ticket.created_at).toLocaleTimeString()}
+                                        </p>
                                     </div>
                                 </div>
-                                <div className={styles.ReviewsInfo}>
-                                    <p className={styles.ReviewDate}><span className={styles.deliveredText}>Delivered on </span>{ticket.deliveredDate} <br /> {ticket.deliveredTime}</p>
-                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p>No tickets available for {activeTab.toLowerCase()} tab.</p>
+                )}
             </div>
         </div>
     );

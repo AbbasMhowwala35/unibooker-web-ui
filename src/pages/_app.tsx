@@ -10,6 +10,7 @@ import LoadingSkeleton from "./components/common/LoadingSkeleton";
 import { Jost } from "next/font/google";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from "react-toastify";
+import { ThemeProvider } from "@/context/ThemeContext";
 const jostFont = Jost({
   variable: "--font-jost",
   subsets: ["latin"],
@@ -34,16 +35,18 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <AuthProvider>
-      <Header />
-      {loading ? (
-        <LoadingSkeleton />
-      ) : (
-        <div className={jostFont.variable}>
-          <Component {...pageProps} />
-        </div>
-      )}
-      <Footer />
-      <ToastContainer />
+      <ThemeProvider>
+        <Header />
+        {loading ? (
+          <LoadingSkeleton />
+        ) : (
+          <div className={jostFont.variable}>
+            <Component {...pageProps} />
+          </div>
+        )}
+        <Footer />
+        <ToastContainer />
+      </ThemeProvider>
     </AuthProvider>
   );
 }

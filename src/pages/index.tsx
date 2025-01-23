@@ -427,12 +427,12 @@ export default function Home() {
           {/* Travel Stories Section */}
           <section className={styles.travel_stories}>
             <h3>Client Testimonial</h3>
-            <Row className="align-items-baseline">
+            <Row className="align-items-center">
               <Col md={6}>
                 <Image src={testimonial} className={`${styles.travel_stories_img} img-fluid`} alt="Travel Story" />
               </Col>
               <Col md={6}>
-                <div>
+                <div className={styles.clientBox}>
                   <Slider {...settings}>
                     {testimonials.map((testimonial, index) => (
                       <div key={index} className={styles.testimonialSlide}>

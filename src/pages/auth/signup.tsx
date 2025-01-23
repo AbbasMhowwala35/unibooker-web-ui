@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import Newsletter from "../components/common/Newsletter";
 import styles from '@/styles/Auth.module.css';
 import Image from "next/image";
 import signup from '../../Images/signup.png';
 import { Jost } from "next/font/google";
 import { useEffect, useState } from "react";
-import { FaEye, FaEyeSlash, FaGoogle, FaApple } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import api from "../api/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import parsePhoneNumberFromString from 'libphonenumber-js'
+import GoogleLogin from "./google-login";
 
 const jostFont = Jost({
   variable: "--font-jost",
@@ -96,8 +97,8 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const validateForm = () => {
-      const { first_name, last_name, phone, email, password, agree, birthdate, address } = formData;
-      if (!first_name || !last_name || !phone || !email || !password || !agree || !birthdate || !address) {
+      const { first_name, last_name, phone, email, password, agree, birthdate } = formData;
+      if (!first_name || !last_name || !phone || !email || !password || !agree || !birthdate) {
         toast.error("Please fill all the fields and accept the terms.");
         return false;
       }
@@ -292,7 +293,7 @@ const Signup = () => {
                           />
                         </div>
                       </div>
-                      <div className={styles.formGroup}>
+                      <div className="d-none">
                         <div className={styles.inputWithIcon}>
                           <svg className={styles.icon} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="#17BEBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -366,15 +367,7 @@ const Signup = () => {
                         {loading ? "Signing up..." : "Sign Up"}
                       </button>
                     </form>
-                    <div className={styles.socialSignIn}>
-                      <p>Or Sign in with</p>
-                      <Button className={styles.socialButton} variant="outline-dark">
-                        <FaGoogle className={styles.socialIcon} />
-                      </Button>
-                      <Button className={styles.socialButton} variant="outline-dark">
-                        <FaApple className={styles.socialIcon} />
-                      </Button>
-                    </div>
+                    <GoogleLogin />
                     <div className={styles.authLinks}>
                       <p>Already have an account??<Link href="/auth/login"> Sign In</Link></p>
                     </div>

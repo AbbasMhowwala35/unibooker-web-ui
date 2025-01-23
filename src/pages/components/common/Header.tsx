@@ -111,14 +111,28 @@ const Header = () => {
           {/* Profile Section with Dropdown */}
           {!isHomePage ? (
             <div className={`d-flex gap-3 ${styles.ProfileSection}`}>
-              <div className={styles['profile-section']}>
-                <Link href={isLoggedIn ? "/profile" : "/auth/login"}><Image src={userIcon} className={styles['user-icon']} alt="User Profile" /></Link>
-              </div>
+              {isLoggedIn ? (
+                <Dropdown align="end">
+                  <Dropdown.Toggle variant="link" id="profile-dropdown">
+                    <Image src={userIcon} className={styles['user-icon']} alt="User Profile" />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <Dropdown.Item href="/profile">My Profile</Dropdown.Item>
+                    <Dropdown.Item href="/orders">My Orders</Dropdown.Item>
+                    <Dropdown.Divider />
+                    <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              ) : (
+                <div className={styles['profile-section']}>
+                  <Link href={isLoggedIn ? "/profile" : "/auth/login"}><Image src={userIcon} className={styles['user-icon']} alt="User Profile" /></Link>
+                </div>
+              )}
               <div className={styles['profile-section']}>
                 <Link href="/wishlist"><Image src={wishlist} className={styles['user-icon']} alt="Wishlist" /></Link>
               </div>
               <div className={styles['profile-section']}>
-                <Link href={isLoggedIn ? "/profile" : "/auth/login"}><Image src={cart} className={styles['user-icon']} alt="Cart" /></Link>
+                <Link href="#"><Image src={cart} className={styles['user-icon']} alt="Cart" /></Link>
               </div>
             </div>
           ) : isLoggedIn ? (

@@ -262,6 +262,10 @@
   margin-bottom: 100px;
 }
 
+.clientBox {
+  margin: 0 100px;
+}
+
 .travel_stories h3 {
   text-align: left;
 }
