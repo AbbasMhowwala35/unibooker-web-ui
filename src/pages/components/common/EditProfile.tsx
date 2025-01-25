@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import styles from "../../../styles/Profile.module.css";
-import person from '../../../Images/person1.jpg';
 import Image from 'next/image';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
+import api from '@/pages/api/api';
+import { toast } from 'react-toastify';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 interface Profile {
   first_name: string;
@@ -10,30 +14,157 @@ interface Profile {
   phone: string;
   birthdate: string;
   aboutYourself: string;
-  profileImage: string;
+  phone_country: string;
+  profile_image: {
+    url: string;
+  };
 }
+interface PhoneType {
+  phone: string;
+  phone_country: string;
+}
+
 
 const EditProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
-
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [otp, setOtp] = useState<string>('');
+  const [isEmailBeingEdited, setIsEmailBeingEdited] = useState(false);
+  const [isPhoneBeingEdited, setIsPhoneBeingEdited] = useState(false);
+  const [previousPhone, setPreviousPhone] = useState<string>('');
+  const [isCountrySelected, setIsCountrySelected] = useState(false);
+  const [isPhoneValid, setIsPhoneValid] = useState(false)
+  const [editedPhone, setEditedPhone] = useState<PhoneType | null>(null);
+  console.log(isPhoneValid)
   useEffect(() => {
-    const storedData = localStorage.getItem("userData"); 
+    const storedData = localStorage.getItem("userData");
     if (storedData) {
       setProfile(JSON.parse(storedData));
-    } 
+    }
   }, []);
 
   const handleEditClick = () => {
     setIsEditing(true);
   };
 
-  const handleSaveChanges = (e: React.FormEvent) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+    }
+  };
+
+  const uploadProfileImage = async () => {
+    if (!imageFile) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      await api.post('/uploadProfileImage', { profile_image: base64 });
+      toast.success('Profile image updated successfully!');
+    };
+    reader.readAsDataURL(imageFile);
+  };
+
+  const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsEditing(false);
+    if (imageFile) {
+      await uploadProfileImage();
+    }
     if (profile) {
-      localStorage.setItem("userProfile", JSON.stringify(profile));
-      alert("Profile updated successfully!");
+      const response = await api.post('/editProfile', {
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        birthdate: profile.birthdate,
+        aboutYourself: profile.aboutYourself,
+        email: profile.email,
+        phone: profile.phone,
+      });
+      if (response.status === 200) {
+        localStorage.setItem("userData", JSON.stringify({
+          ...profile,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          email: profile.email,
+          phone: profile.phone,
+          profile_image: profile.profile_image,
+        }));
+        toast.success("Profile updated successfully!");
+      }
+    }
+  };
+
+  const handlePhoneChange = async (value?: string) => {
+    const phoneValue = value || '';
+    const parsedPhoneNumber = parsePhoneNumberFromString(phoneValue);
+    if (parsedPhoneNumber && isCountrySelected && phoneValue.replace(/\D/g, '').length === 12) {
+      setIsPhoneValid(true);
+      const phoneNumber = parsedPhoneNumber.nationalNumber;
+      const dialCode = parsedPhoneNumber.countryCallingCode ? `+${parsedPhoneNumber.countryCallingCode}` : '';
+      const countryCode = parsedPhoneNumber.country || '';
+      const phoneChanged = phoneNumber !== previousPhone;
+      const countryChanged = dialCode !== previousPhone.slice(0, dialCode.length);
+      if (phoneChanged || countryChanged) {
+        setPreviousPhone(phoneNumber);
+        const payload = {
+          phone: phoneNumber,
+          phone_country: dialCode,
+          default_country: countryCode,
+        }
+        setEditedPhone(payload)
+        const response = await api.post('/checkMobileNumber', payload);
+        if (response.data.data.otp) {
+          setIsPhoneBeingEdited(true)
+          toast.success('OTP sent to your phone.');
+        }
+      }
+    } else {
+      setIsPhoneValid(false);
+      console.error('Invalid phone number or country not selected');
+    }
+  };
+
+  const handlePhoneVerification = async () => {
+    const response = await api.post('/changeMobileNumber', { phone: editedPhone?.phone, phone_country: editedPhone?.phone_country, otp_value: otp });
+    if (response.data.data.token) {
+      toast.success('Phone number updated successfully!');
+      setIsPhoneBeingEdited(false)
+      if (profile) {
+        localStorage.setItem("userData", JSON.stringify({
+          ...profile,
+          phone: editedPhone?.phone,
+          phone_country: editedPhone?.phone_country
+        }));
+      }
+    } else {
+      toast.error('Failed to verify phone number.');
+    }
+  };
+
+  const handleEmailChange = async () => {
+    setIsEmailBeingEdited(true);
+    const response = await api.post('/checkEmail', { email: profile?.email });
+    if (response.data.data.otp) {
+      toast.success('OTP sent to your email.');
+    } else {
+      toast.error('Email already in use.');
+    }
+  };
+
+  const handleEmailVerification = async () => {
+    const response = await api.post('/changeEmail', { email: profile?.email, otp_value: otp });
+    if (response.data.data.token) {
+      toast.success('Email updated successfully!');
+      setIsEmailBeingEdited(false)
+      if (profile) {
+        localStorage.setItem("userData", JSON.stringify({
+          ...profile,
+          email: profile?.email
+        }));
+      }
+    } else {
+      toast.error('Failed to verify email.');
     }
   };
 
@@ -53,6 +184,12 @@ const EditProfile = () => {
       </div>
       {isEditing ? (
         <form className={styles.ProfileChildCardForm} onSubmit={handleSaveChanges}>
+          <div className="row">
+            <div className="col-md-12 mb-4">
+              <label htmlFor="profileImage" className="form-label">Profile Image</label>
+              <input type="file" id="profileImage" className="form-control" onChange={handleImageChange} />
+            </div>
+          </div>
           <div className="row">
             <div className="col-md-6 mb-4">
               <label htmlFor="firstName" className="form-label">First Name</label>
@@ -84,19 +221,57 @@ const EditProfile = () => {
                 className="form-control"
                 value={profile.email}
                 onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                onBlur={handleEmailChange}
               />
             </div>
             <div className="col-md-6 mb-4">
               <label htmlFor="phone" className="form-label">Phone</label>
-              <input
-                type="text"
-                id="phone"
-                className="form-control"
-                value={profile.phone}
-                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+              <PhoneInput
+                countrySelectProps={{ unicodeFlags: true }}
+                value={profile?.phone_country + profile?.phone}
+                withCountryCallingCode
+                international
+                onChange={handlePhoneChange}
+                onCountryChange={(country) => setIsCountrySelected(!!country)}
               />
             </div>
+            <div className="col-md-6 mb-4">
+              {isPhoneBeingEdited && (
+                <div className="mb-4">
+                  <label htmlFor="otp" className="form-label">Enter OTP</label>
+                  <input
+                    type="text"
+                    id="otp"
+                    className="form-control"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                </div>
+              )}
+              {isPhoneBeingEdited && (
+                <button type="button" onClick={handlePhoneVerification} className="theme_btn">
+                  Verify Phone
+                </button>
+              )}
+            </div>
           </div>
+          {isEmailBeingEdited && (
+            <div className="mb-4">
+              <label htmlFor="otp" className="form-label">Enter OTP</label>
+              <input
+                type="text"
+                id="otp"
+                className="form-control"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+            </div>
+          )}
+          {isEmailBeingEdited && (
+            <button type="button" onClick={handleEmailVerification} className="theme_btn">
+              Verify Email
+            </button>
+          )}
           <div className="row">
             <div className="col-md-6 mb-4">
               <label htmlFor="birthDate" className="form-label">Birth Date</label>
@@ -126,7 +301,7 @@ const EditProfile = () => {
       ) : (
         <div className={`${styles.ProfileChildCardForm} ${styles.ProfileViewCard} d-flex justify-content-between gap-5`}>
           <div className={styles.ProfileImgSection}>
-            <Image src={person} alt="Profile" className={styles.profileImageDisplay} />
+            <Image src={profile?.profile_image?.url || ""} width={50} height={50} alt="Profile" className={styles.profileImageDisplay} />
             <h4>{`${profile.first_name} ${profile.last_name}`}</h4>
             <p>{profile.aboutYourself}</p>
           </div>
