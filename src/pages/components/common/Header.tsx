@@ -6,8 +6,7 @@ import userIcon from '../../../Images/user.svg';
 import wishlist from '../../../Images/heart.svg';
 import cart from '../../../Images/cart.svg';
 import styles from "@/styles/Layout.module.css";
-import locationWhite from '../../../Images/location-white.svg';
-import { Col, Container, Row, Navbar, Nav, Form, Dropdown } from 'react-bootstrap';
+import { Container, Navbar, Nav, Form, Dropdown } from 'react-bootstrap';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { BsPinMapFill, BsSearch } from 'react-icons/bs';
 import Breadcrumbs from './Breadcrumbs';
@@ -55,7 +54,7 @@ const Header = () => {
 
   return (
     <>
-      {!isHomePage && (
+      {/* {!isHomePage && (
         <div className={styles['top-bar']}>
           <Container>
             <Row className='align-items-center justify-content-center'>
@@ -69,7 +68,7 @@ const Header = () => {
             </Row>
           </Container>
         </div>
-      )}
+      )} */}
       <header
         className={`${styles['theme-header']} ${isHomePage ? styles['header-absolute'] : styles['header-static']}`}>
         <div className={`container d-flex justify-content-between align-items-center ${styles.headerContainer}`}>

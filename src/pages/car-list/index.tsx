@@ -10,7 +10,10 @@ const jostFont = Jost({
     variable: "--font-jost",
     subsets: ["latin"],
 });
-
+interface Feature {
+    id: string;
+    name: string;
+}
 interface Car {
     id: string;
     name: string;
@@ -18,7 +21,7 @@ interface Car {
     is_in_wishlist: boolean
     address: string;
     state_region: string;
-    city: string;
+    city: string | null;
     zip_postal_code: string;
     price: string;
     latitude: string;
@@ -50,7 +53,6 @@ interface ItemType {
     status: string;
     image: string | null;
 }
-
 interface Make {
     id: number;
     name: string;
@@ -58,7 +60,6 @@ interface Make {
     status: string;
     imageURL: string;
 }
-
 
 const Index = () => {
     const [homeData, setHomeData] = useState<Car[]>([]);
@@ -68,6 +69,14 @@ const Index = () => {
     const [makes, setMakes] = useState<Make[]>([]);
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [priceRange, setPriceRange] = useState([1, 1000]);
+    const [years, setYears] = useState<string[]>([]);
+    const [odometerRanges, setOdometerRanges] = useState<string[]>([]);
+    const [selectedOdometer, setSelectedOdometer] = useState<string[]>([]);
+    const [featureData, setFeatureData] = useState<Feature[]>([]);
+    const [selectedFeatures, setSelectedFeatures] = useState<Feature[]>([]);
+    const [selectedYears, setSelectedYears] = useState<string[]>([]);
+    const [sortOption, setSortOption] = useState<string>("");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -82,6 +91,31 @@ const Index = () => {
                 setFilteredData(mergedData);
                 setMakes(response.data.data.makes || []);
                 setItemTypes(response.data.data.itemTypes || []);
+                const yearsSet = new Set<string>();
+                mergedData.forEach((car) => {
+                    const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
+                    if (itemInfo.year) yearsSet.add(itemInfo.year);
+                });
+                const odometerSet = new Set<string>();
+                const featuresSet = new Set<string>();
+                mergedData.forEach((car) => {
+                    const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
+                    if (itemInfo.year) yearsSet.add(itemInfo.year);
+                    if (itemInfo.odometer) odometerSet.add(itemInfo.odometer);
+                    if (itemInfo.features_data) {
+                        itemInfo.features_data.forEach((feature: Feature) => {
+                            featuresSet.add(feature.name);
+                        });
+                    }
+                });
+                setYears(Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a)));
+                setOdometerRanges(Array.from(odometerSet));
+                setFeatureData(
+                    Array.from(featuresSet).map((name, index) => ({
+                        id: `feature-${index}`,
+                        name,
+                    }))
+                );
             } catch (error) {
                 console.error("Error fetching home data:", error);
             } finally {
@@ -89,7 +123,7 @@ const Index = () => {
             }
         };
         fetchData();
-    }, []);
+    }, [])
 
     useEffect(() => {
         const selectedCity = localStorage.getItem("selectedCity");
@@ -101,11 +135,44 @@ const Index = () => {
             const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(makeType);
             const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(car.item_type_id.toString());
             const matchesCity = !selectedCity || car.city === selectedCity;
-
-            return matchesBrandInSession && matchesBrand && matchesCategory && matchesCity;
+            const carPrice = parseFloat(car.price.replace(/[^0-9.-]+/g, ""));
+            const matchesPrice = carPrice >= priceRange[0] && carPrice <= priceRange[1];
+            const matchesYear = selectedYears.length === 0 || selectedYears.includes(itemInfo.year);
+            const matchesOdometer = selectedOdometer.length === 0 || selectedOdometer.includes(itemInfo.odometer);
+            const matchesFeatures = selectedFeatures.every((feature: Feature) =>
+                itemInfo.features_data && itemInfo.features_data.some((f: Feature) => f.name === feature.name)
+            );
+            return matchesBrandInSession && matchesBrand && matchesCategory && matchesCity && matchesPrice && matchesYear && matchesOdometer && matchesFeatures;
         });
         setFilteredData(filtered);
-    }, [selectedBrands, selectedCategories, homeData]);
+    }, [selectedBrands, selectedCategories, homeData, priceRange, selectedOdometer, selectedYears]);
+
+    useEffect(() => {
+        const filtered = homeData.filter((car) => {
+            const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
+            const matchesFeatures = selectedFeatures.every((feature: Feature) =>
+                itemInfo.features_data && itemInfo.features_data.some((f: Feature) => f.name === feature.name)
+            );
+            return matchesFeatures;
+        });
+        setFilteredData(filtered);
+    }, [selectedFeatures, homeData]);
+
+    const handleSortChange = (option: string) => {
+        setSortOption(option);
+        const sortedData = [...filteredData];
+
+        if (option === "cheapest") {
+            sortedData.sort((a, b) => parseFloat(a.price.replace(/[^0-9.-]+/g, "")) - parseFloat(b.price.replace(/[^0-9.-]+/g, "")));
+        } else if (option === "nearest") {
+            sortedData.sort((a, b) => {
+                const cityA = a.city || "";
+                const cityB = b.city || "";
+                return cityA.localeCompare(cityB);
+            });
+            setFilteredData(sortedData);
+        };
+    }
 
     const handleBrandChange = (brand: string) => {
         setSelectedBrands((prev) =>
@@ -123,9 +190,24 @@ const Index = () => {
         sessionStorage.setItem("selectedCar", JSON.stringify(car));
     };
 
+    const handleFeatureChange = (feature: Feature) => {
+        setSelectedFeatures((prev) =>
+            prev.some((f) => f.id === feature.id)
+                ? prev.filter((item) => item.id !== feature.id)
+                : [...prev, feature]
+        );
+    };
+
+    const handleYearChange = (year: string) => {
+        setSelectedYears((prev) =>
+            prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
+        );
+    };
+
     if (loading) {
         return <Loader />;
     }
+
 
     return (
         <>
@@ -139,7 +221,22 @@ const Index = () => {
                 <Container>
                     <Row>
                         <Col md={12} className={styles.main_heading}>
-                            <h2>Car List</h2>
+                            <Row className='m-3'>
+                                <Col md={6} className='text-start'>
+                                    <h2>Car List</h2>
+                                </Col>
+                                <Col md={6} className='text-end'>
+                                    <div>
+                                        <h5>Sort By</h5>
+                                        <select onChange={(e) => handleSortChange(e.target.value)} value={sortOption}>
+                                            <option value="">Select Sort</option>
+                                            <option value="cheapest">Cheapest Price</option>
+                                            <option value="nearest">Nearest Location</option>
+                                            <option value="mostViewed">Most Viewed</option>
+                                        </select>
+                                    </div>
+                                </Col>
+                            </Row>
                         </Col>
                         <Col md={3}>
                             <div className={styles.filter_section}>
@@ -159,8 +256,15 @@ const Index = () => {
                                 </ul>
                                 <div className={styles.checkbox}>
                                     <h5>Price Range</h5>
-                                    <div>Range: $0 - $1000</div>
-                                    <input type="range" min="0" max="1000" step="50" />
+                                    <div>Range: ${priceRange[0]} - ${priceRange[1]}</div>
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="1000"
+                                        step="50"
+                                        value={priceRange[0]}
+                                        onChange={(e) => setPriceRange([parseFloat(e.target.value), priceRange[1]])}
+                                    />
                                 </div>
                                 <h5>Brands</h5>
                                 <ul>
@@ -176,17 +280,53 @@ const Index = () => {
                                         </li>
                                     ))}
                                 </ul>
+                                <h5>Odometer</h5>
                                 <ul>
-                                    <li><input type="checkbox" /> On Sale</li>
-                                    <li><input type="checkbox" /> Out of Stock</li>
+                                    {odometerRanges.map((range) => (
+                                        <li key={range}>
+                                            <input
+                                                type="checkbox"
+                                                id={`odometer-${range}`}
+                                                checked={selectedOdometer.includes(range)}
+                                                onChange={() => {
+                                                    setSelectedOdometer((prev) =>
+                                                        prev.includes(range)
+                                                            ? prev.filter((item) => item !== range)
+                                                            : [...prev, range]
+                                                    );
+                                                }}
+                                            />
+                                            <label htmlFor={`odometer-${range}`}>{range}</label>
+                                        </li>
+                                    ))}
                                 </ul>
-                                <h5>Ratings</h5>
+                                <h5>Features</h5>
                                 <ul>
-                                    <li>⭐⭐⭐⭐⭐</li>
-                                    <li>⭐⭐⭐⭐</li>
-                                    <li>⭐⭐⭐</li>
-                                    <li>⭐⭐</li>
-                                    <li>⭐</li>
+                                    {featureData.map((feature, index) => (
+                                        <li key={index}>
+                                            <input
+                                                type="checkbox"
+                                                id={`feature-${feature.name}`}
+                                                checked={selectedFeatures.some((f) => f.id === feature.id)}
+                                                onChange={() => handleFeatureChange(feature)}
+                                            />
+                                            <label htmlFor={`feature-${feature.name}`}>{feature.name}</label>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <h5>Year</h5>
+                                <ul>
+                                    {years.map((year) => (
+                                        <li key={year}>
+                                            <input
+                                                type="checkbox"
+                                                id={`year-${year}`}
+                                                checked={selectedYears.includes(year)}
+                                                onChange={() => handleYearChange(year)}
+                                            />
+                                            <label htmlFor={`year-${year}`}>{year}</label>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </Col>
@@ -222,6 +362,6 @@ const Index = () => {
             </section>
         </>
     )
-}
+};
 
-export default Index
+export default Index;

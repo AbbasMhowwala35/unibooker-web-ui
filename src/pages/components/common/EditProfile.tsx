@@ -256,21 +256,23 @@ const EditProfile = () => {
             </div>
           </div>
           {isEmailBeingEdited && (
-            <div className="mb-4">
-              <label htmlFor="otp" className="form-label">Enter OTP</label>
-              <input
-                type="text"
-                id="otp"
-                className="form-control"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-              />
+            <div className="col-md-6 mb-4">
+              <div className="mb-4">
+                <label htmlFor="otp" className="form-label">Enter OTP</label>
+                <input
+                  type="text"
+                  id="otp"
+                  className="form-control"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                />
+              </div>
+              {isEmailBeingEdited && (
+                <button type="button" onClick={handleEmailVerification} className="theme_btn">
+                  Verify Email
+                </button>
+              )}
             </div>
-          )}
-          {isEmailBeingEdited && (
-            <button type="button" onClick={handleEmailVerification} className="theme_btn">
-              Verify Email
-            </button>
           )}
           <div className="row">
             <div className="col-md-6 mb-4">
