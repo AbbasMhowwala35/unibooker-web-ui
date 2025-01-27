@@ -5,7 +5,7 @@ import { BsFillSendFill } from 'react-icons/bs';
 import api from '@/pages/api/api';
 
 const CreateTicket = () => {
-    const [isTicketCreated, setIsTicketCreated] = useState(false);
+    const [isTicketCreated, setIsTicketCreated] = useState(true);
     const [ticketTitle, setTicketTitle] = useState("");
     const [ticketDescription, setTicketDescription] = useState("");
     const [loading, setLoading] = useState(false);

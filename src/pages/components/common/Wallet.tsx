@@ -1,36 +1,138 @@
-import React, { useState } from 'react';
-import card from '../../../Images/card.png'
+import React, { useEffect, useState } from 'react';
 import styles from "../../../styles/Profile.module.css";
-import Image from 'next/image';
 import { MdArrowBack, MdArrowForward } from 'react-icons/md';
+import api, { API_BASE_URL } from '@/pages/api/api';
+import Loader from './Loader';
+
+interface WalletTransaction {
+    id: string;
+    description: string;
+    amount: string | number;
+    created_at: string;
+    type: string;
+    currency: string;
+}
 
 const Wallet = () => {
-    const historyItems = [
-        { id: 1, description: "Cancellation refund for booking #480", amount: "USD 950.00", date: "13 Apr 2002" },
-        { id: 2, description: "Cancellation refund for booking #480", amount: "USD 950.00", date: "13 Apr 2002" },
-        { id: 3, description: "Cancellation refund for booking #480", amount: "USD 950.00", date: "13 Apr 2002" },
-        { id: 4, description: "Cancellation refund for booking #480", amount: "USD 950.00", date: "13 Apr 2002" },
-    ];
+    const [walletBalance, setWalletBalance] = useState<string>("");
+    const [walletTransactions, setWalletTransactions] = useState<WalletTransaction[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [loading, setLoading] = useState({ wallet: false, transactions: false, recharge: false });
+    const [walletError, setWalletError] = useState("");
+    const [transactionError, setTransactionError] = useState("");
+    const [showRechargeForm, setShowRechargeForm] = useState(false);
+    const [rechargeAmount, setRechargeAmount] = useState("");
+    const [rechargeError, setRechargeError] = useState("");
     const itemsPerPage = 2;
-    const totalPages = Math.ceil(historyItems.length / itemsPerPage);
-    const currentHistory = historyItems.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+
+    const fetchWallet = async () => {
+        setLoading((prev) => ({ ...prev, wallet: true }));
+        setWalletError("");
+        try {
+            const response = await api.get('/getUserWallet');
+            if (response.status === 200 && response.data) {
+                setWalletBalance(response.data.data.wallet_balance);
+            } else {
+                setWalletError("Failed to fetch wallet balance.");
+            }
+        } catch (err) {
+            setWalletError("An error occurred while fetching wallet balance.");
+            console.error(err);
+        } finally {
+            setLoading((prev) => ({ ...prev, wallet: false }));
+        }
+    };
+
+    const fetchWalletTransactions = async () => {
+        setLoading((prev) => ({ ...prev, transactions: true }));
+        setTransactionError("");
+        try {
+            const response = await api.get(`/getUserWalletTransactions`);
+            if (response.status === 200 && response.data) {
+                setWalletTransactions(response.data.data.WalletTransactionsDetails || []);
+            } else {
+                setTransactionError("Failed to fetch transactions.");
+            }
+        } catch (err) {
+            setTransactionError("An error occurred while fetching transactions.");
+            console.error(err);
+        } finally {
+            setLoading((prev) => ({ ...prev, transactions: false }));
+        }
+    };
+
+    const handleRecharge = async () => {
+        setLoading((prev) => ({ ...prev, recharge: true }));
+        setRechargeError("");
+        const token = JSON.parse(localStorage.getItem("userData") || "{}").token;
+        const currency = JSON.parse(localStorage.getItem("generalSettings") || "{}").general_default_currency;
+        if (!rechargeAmount || parseFloat(rechargeAmount) <= 0) {
+            setRechargeError("Please enter a valid amount.");
+            setLoading((prev) => ({ ...prev, recharge: false }));
+            return;
+        }
+        try {
+            let baseURL = API_BASE_URL;
+            baseURL = baseURL.replace("/api/v1", "");
+            baseURL = baseURL.replace(/\/$/, "");
+            const paymentUrl = `${baseURL}/wallet_recharge?token=${token}&amount=${rechargeAmount}&currency=${currency}`;
+            window.location.href = paymentUrl;
+        } catch (err) {
+            setRechargeError("An error occurred during recharge.");
+            console.error(err);
+        } finally {
+            setLoading((prev) => ({ ...prev, recharge: false }));
+        }
+    };
+
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
+
+    useEffect(() => {
+        fetchWallet();
+        if(walletBalance){
+            fetchWalletTransactions()
+        }
+    }, [walletBalance]);
+
+    if (loading.wallet || loading.transactions) {
+        return <Loader />
+    }
+
     return (
         <div className={styles.ProfileChildCard}>
             <h3>Wallet</h3>
             <div className={styles.ProfileChildCardForm}>
-                <div className='text-end'>
-                    <Image src={card} className='img-fluid' alt='Card' />
+                <div className='d-flex align-items-center justify-content-between'>
+                    {/* <Image src={card} className='img-fluid' alt='Card' /> */}
+                    {walletBalance ? (
+                        <h3>Wallet Balance: <br /><span className='d-block my-3'>USD {walletBalance}</span></h3>
+                    ) : (
+                        <p>Loading wallet balance...</p>
+                    )}
+                    <button className="theme_btn" onClick={() => setShowRechargeForm(!showRechargeForm)}>
+                        {showRechargeForm ? "Cancel" : "Add Money"}
+                    </button>
                 </div>
+                {showRechargeForm && (
+                    <div className={styles.RechargeForm}>
+                        <input
+                            type="number"
+                            value={rechargeAmount}
+                            onChange={(e) => setRechargeAmount(e.target.value)}
+                            placeholder="Enter amount"
+                            className="form-control my-2"
+                        />
+                        <button className="theme_btn" onClick={handleRecharge} disabled={loading?.recharge}>
+                            {loading?.recharge ? "Recharging..." : "Recharge"}
+                        </button>
+                        {rechargeError && <p className="text-danger mt-2">{rechargeError}</p>}
+                    </div>
+                )}
                 <h5>History</h5>
-                {currentHistory.map((item) => (
-                    <div key={item.id} className={styles.ProfileCardRow}>
+                {walletTransactions.map((transaction) => (
+                    <div key={transaction?.id} className={styles.ProfileCardRow}>
                         <div className={styles.ProfileCardRowIn}>
                             <div className={styles.ProfileCardInfo}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="22" viewBox="0 0 25 22" fill="none">
@@ -39,40 +141,39 @@ const Wallet = () => {
                                     <path d="M9.54968 8.44764C9.54968 5.74913 10.7085 3.35558 12.4896 1.80681C11.1806 0.68048 9.52827 0 7.72565 0C3.45499 0 0 3.77792 0 8.44764C0 13.1173 3.45499 16.8953 7.72555 16.8953C9.52817 16.8953 11.1805 16.2148 12.4896 15.0884C10.7085 13.5631 9.54968 11.1461 9.54968 8.44764Z" fill="#EB001B" />
                                     <path d="M24.9994 8.44764C24.9994 13.1173 21.5444 16.8953 17.2738 16.8953C15.4712 16.8953 13.8188 16.2148 12.5098 15.0884C14.3124 13.5397 15.4498 11.1461 15.4498 8.44764C15.4498 5.74913 14.2909 3.35558 12.5098 1.80681C13.8187 0.68048 15.4712 0 17.2738 0C21.5444 0 24.9994 3.80143 24.9994 8.44764Z" fill="#F79E1B" />
                                 </svg>
-                                <p>{item.description}</p>
+                                <p>{transaction?.description}</p>
                             </div>
-                            <div className={styles.ProfileCardPrice}><p>{item.amount}</p></div>
+                            <div className={styles.ProfileCardPrice}><p>{transaction?.currency} {transaction?.amount}</p></div>
                         </div>
                         <div className={`${styles.ProfileCardRowIn} ${styles.ProfileCardRowMoreInfo}`}>
-                            <div><p>Savings </p></div>
-                            <div><p>{item.date}</p></div>
+                            <div><p>{transaction?.type} </p></div>
+                            <div><p>{transaction?.created_at}</p></div>
                         </div>
                     </div>
                 ))}
+                 {walletError && <p className="text-sm text-red-600">{walletError}</p>}
+                 {transactionError && <p className="text-sm text-red-600">{transactionError}</p>}
                 <div className="Pagination">
-                <button
-                    className="PageButton"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                >
-                    <MdArrowBack />
-                </button>
-                <div className="d-flex gap-3">
-                    <span className="PageInfo active">
-                        {currentPage}
-                    </span>
-                    <span className="PageInfo">
-                        {totalPages}
-                    </span>
+                    <button
+                        className="PageButton"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        <MdArrowBack />
+                    </button>
+                    <div className="d-flex gap-3">
+                        <span className="PageInfo active">
+                            {currentPage}
+                        </span>
+                    </div>
+                    <button
+                        className="PageButton"
+                        disabled={walletTransactions.length < itemsPerPage}
+                        onClick={() => handlePageChange(currentPage + 1)}
+                    >
+                        <MdArrowForward />
+                    </button>
                 </div>
-                <button
-                    className="PageButton"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                >
-                    <MdArrowForward />
-                </button>
-            </div>
             </div>
         </div>
     );

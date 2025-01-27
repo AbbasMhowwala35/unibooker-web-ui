@@ -11,7 +11,6 @@ import { FaClipboardList, FaCog, FaStar, FaUserEdit } from 'react-icons/fa'
 import Wallet from '../components/common/Wallet'
 import { BsWallet2 } from 'react-icons/bs'
 import Tickets from '../components/common/Tickets'
-import CreateTicket from '../components/common/CreateTicket'
 import Loader from '../components/common/Loader'
 
 // Define Jost font
@@ -114,14 +113,14 @@ const Index = () => {
                                         </>
                                     } 
                                     />
-                                    <Tab 
+                                    {/* <Tab 
                                     eventKey="createTicket" 
                                     title={
                                         <>
                                         <BsWallet2 className="me-2" /> Create Ticket
                                         </>
                                     } 
-                                    />
+                                    /> */}
                                 </Tabs>
                             </div>
                         </Col>
@@ -145,9 +144,9 @@ const Index = () => {
                                 <Tab.Pane eventKey="ticket" active={activeKey === 'ticket'}>
                                     <Tickets />
                                 </Tab.Pane>
-                                <Tab.Pane eventKey="createTicket" active={activeKey === 'createTicket'}>
+                                {/* <Tab.Pane eventKey="createTicket" active={activeKey === 'createTicket'}>
                                     <CreateTicket />
-                                </Tab.Pane>
+                                </Tab.Pane> */}
                             </Tab.Content>
                         </Col>
                     </Row>

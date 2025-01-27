@@ -4,9 +4,14 @@ import { Container, Row, Col } from 'react-bootstrap';
 import Loader from '../components/common/Loader'
 import api from "@/pages/api/api";
 
+interface AboutUsData {
+    name: string;
+    content: string;
+}
+
 const About = () => {
     const [loading, setLoading] = useState(true);
-    const [aboutUsData, setAboutUsData] = useState(true);
+    const [aboutUsData, setAboutUsData] = useState<AboutUsData | null>(null)
 
     useEffect(() => {
         const fetchAboutUs = async () => {
@@ -38,19 +43,10 @@ const About = () => {
         <section className={styles.aboutPage}>
             <Container>
                 <Row>
-                    {/* <Col md={6} className={styles.aboutImage}>
-                        <Image
-                            src="https://via.placeholder.com/500"
-                            alt="About Us"
-                            className="img-fluid"
-                            width={500}
-                            height={500}
-                        />
-                    </Col> */}
                     <Col md={12} className={styles.aboutContent}>
-                        <h1 className={styles.aboutHeading}>{aboutUsData.name}</h1>
+                        <h1 className={styles.aboutHeading}>{aboutUsData?.name}</h1>
                         <div
-                        dangerouslySetInnerHTML={{ __html: aboutUsData.content || '' }}
+                        dangerouslySetInnerHTML={{ __html: aboutUsData?.content || '' }}
                     />
                         
                     </Col>

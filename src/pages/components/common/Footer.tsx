@@ -27,11 +27,12 @@ const Footer = () => (
           <Row>
             <Col md={4}>
               <div className={styles['link-section']}>
-                <h5>Sell</h5>
+                <h5>About</h5>
                 <ul className={styles['info-section']}>
-                  <li><Link href="/">Start Links</Link></li>
-                  <li><Link href="/">Seller Protection</Link></li>
-                  <li><Link href="/">Learn to Sell</Link></li>
+                  <li><Link href="/about">About Us</Link></li>
+                  <li><Link href="/terms-and-services">Terms & Services</Link></li>
+                  <li><Link href="/get-help">Get Help</Link></li>
+                  <li><Link href="/give-feedback">Give Feedback</Link></li>
                 </ul>
               </div>
             </Col>

@@ -6,7 +6,8 @@ import 'react-phone-number-input/style.css';
 import api from '@/pages/api/api';
 import { toast } from 'react-toastify';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
-
+import { BsTrash } from 'react-icons/bs';
+import { useRouter } from 'next/router';
 interface Profile {
   first_name: string;
   last_name: string;
@@ -26,6 +27,7 @@ interface PhoneType {
 
 
 const EditProfile = () => {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -168,6 +170,22 @@ const EditProfile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    const confirmation = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (confirmation) {
+      const response = await api.post('/deleteAccount');
+      if (response.data.status === 200) {
+        toast.success('Account Deleted successfully!');
+        router.push("/auth/login");
+      }
+      else {
+        toast.success(response.data.message);
+      }
+    }
+  }
+
   if (!profile) {
     return <p>Loading...</p>;
   }
@@ -306,6 +324,14 @@ const EditProfile = () => {
             <Image src={profile?.profile_image?.url || ""} width={50} height={50} alt="Profile" className={styles.profileImageDisplay} />
             <h4>{`${profile.first_name} ${profile.last_name}`}</h4>
             <p>{profile.aboutYourself}</p>
+
+            <button
+              className="theme_btn flex items-center gap-2 px-4 py-2 text-white bg-red-600 hover:bg-red-700"
+              onClick={handleDeleteAccount}
+            >
+              <BsTrash className="w-5 h-5" />
+              Delete Account
+            </button>
           </div>
           <div className={styles.ProfileContentDisplaySection}>
             <div className="d-flex gap-5 mb-3 justify-content-between">
