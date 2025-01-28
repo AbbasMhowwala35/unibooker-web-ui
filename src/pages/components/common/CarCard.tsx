@@ -36,13 +36,13 @@ const CarCard: React.FC<CarCardProps> = ({
         e.stopPropagation()
 
         const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-        if (!userData?.token) {
+        if (!userData?.token && !userData?.accessToken) {
             toast.info("Please log in to use the wishlist.");
             return;
         }
         const payload = {
             item_id: id,
-            token: userData?.token,
+            token: userData?.token || userData?.accessToken,
         };
 
         try {

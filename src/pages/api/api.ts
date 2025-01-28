@@ -42,7 +42,7 @@ api.interceptors.request.use(
   async (config) => {
     const userDataString = localStorage.getItem("userData");
     const userData = userDataString ? JSON.parse(userDataString) : {};
-    const token = (userData.token as string) || "";
+    const token = (userData.token as string) || (userData.accessToken as string) || "";
     const location = await getUserLocation();
     const timeZone = getSystemTimezone();
 

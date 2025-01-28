@@ -11,6 +11,7 @@ import { Jost } from "next/font/google";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { SessionProvider } from "next-auth/react";
 const jostFont = Jost({
   variable: "--font-jost",
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }, []);
 
   return (
+    <SessionProvider session={pageProps.session}>
     <AuthProvider>
       <ThemeProvider>
         <Header />
@@ -48,5 +50,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <ToastContainer />
       </ThemeProvider>
     </AuthProvider>
+    </SessionProvider>
   );
 }
