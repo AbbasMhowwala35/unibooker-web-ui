@@ -170,13 +170,13 @@ export default function Home() {
   const handleLocationClick = (cityName: string) => {
     setLocationClicked(cityName)
     sessionStorage.setItem("selectedCity", cityName);
-    router.push('/car-list')
+    router.push('/items-list')
   };
 
   const handleBrandClick = async (brandName: string) => {
     setBrandClicked(brandName);
     sessionStorage.setItem("selectedBrand", brandName);
-    router.push('/car-list');
+    router.push('/items-list');
   };  
 
   const saveSelectedCar = (car: MostViewedItem) => {

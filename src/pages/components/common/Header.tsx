@@ -9,9 +9,12 @@ import styles from "@/styles/Layout.module.css";
 import { Navbar, Nav, Dropdown } from 'react-bootstrap';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { BsSearch } from 'react-icons/bs';
-import Breadcrumbs from './Breadcrumbs';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
+import api from '@/pages/api/api';
+import Breadcrumbs from './Breadcrumbs';
+
 interface Profile {
   first_name: string;
   last_name: string;
@@ -22,18 +25,48 @@ interface Profile {
   profileImage: string;
 }
 
+interface Place {
+  name: string;
+  formatted_address: string;
+  rating: number;
+  user_ratings_total: number;
+  icon: string;
+  description: string;
+}
+interface SearchPlace {
+  name: string;
+  formatted_address: string;
+  rating?: number;
+}
+
+
 const Header = () => {
   const router = useRouter();
   const { logout } = useAuth();
   const isHomePage = router.pathname === "/";
   const [searchQuery, setSearchQuery] = useState<string>('');
-  // const [toDate, setToDate] = useState<Date | null>(null);
+  const [suggestions, setSuggestions] = useState<Place[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
-
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null);
+  console.log(selectedPlace)
   useEffect(() => {
     const storedData = localStorage.getItem("userData");
     if (storedData) {
       setProfile(JSON.parse(storedData));
+    }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            long: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
     }
   }, []);
 
@@ -42,33 +75,72 @@ const Header = () => {
     router.push('/auth/login');
   };
 
+  const fetchSuggestions = async (query: string) => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_SUGGESTION_API_URL}?input=${query}&types=(cities)&key=${process.env.NEXT_PUBLIC_API_KEY}`
+      );
+      const places = response.data.results.map((item: SearchPlace) => ({
+        name: item.name,
+        formatted_address: item.formatted_address,
+        rating: item.rating || 0,
+      }));
+
+      setSuggestions(places);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    }
+  };
+
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
+  const handleSuggestionClick = (suggestion: Place) => {
+    setSelectedPlace(suggestion);
+    setSearchQuery(suggestion.name);
+    setSuggestions([]);
+    triggerItemSearch(suggestion.name);
+    sessionStorage.setItem("selectedCity", suggestion.name);
+  };
+
+  useEffect(() => {
+    if (searchQuery.length > 2) {
+      fetchSuggestions(searchQuery);
+    } else {
+      setSuggestions([]);
+    }
+  }, [searchQuery]);
+
   const handleLogoClicked = async () => {
     sessionStorage.clear()
+  };
+
+  const triggerItemSearch = async (city: string): Promise<void> => {
+    console.log(city)
+    if (!userLocation) return;
+    const { lat, long } = userLocation;
+    try {
+      const payload = {
+        title: searchQuery,
+        Slatitude: lat,
+        Slongitude: long,
+        check_in: "",
+        check_out: "",
+        sort: "nearest_location",
+      }
+      const response = await api.post("/itemSearch", payload);
+      sessionStorage.setItem('data', JSON.stringify(response.data.data.items))
+      router.push('/items-list')
+    } catch (error) {
+      console.error('Error triggering item search:', error);
+    }
   };
 
   const isLoggedIn = profile !== null;
 
   return (
     <>
-      {/* {!isHomePage && (
-        <div className={styles['top-bar']}>
-          <Container>
-            <Row className='align-items-center justify-content-center'>
-              <Col md={6} lg={4} xl={4} className={styles['top-bar-left']}>
-                <p>Collect Your Coupon <Link href="/">Get Now</Link></p>
-              </Col>
-              <Col md={6} lg={4} xl={4} className={styles['top-bar-center']}>
-                <p><Image src={locationWhite} alt='Location' /> Sonadanga Khulna, Bangladesh</p>
-              </Col>
-              <Col md={6} lg={4} xl={4} className={styles['top-bar-right']}></Col>
-            </Row>
-          </Container>
-        </div>
-      )} */}
       <header
         className={`${styles['theme-header']} ${isHomePage ? styles['header-absolute'] : styles['header-static']}`}>
         <div className={`container d-flex justify-content-between align-items-center ${styles.headerContainer}`}>
@@ -79,33 +151,48 @@ const Header = () => {
               </Link>
             </div>
           </div>
-          {/* Navigation Menu Section */}
-          {isHomePage ? (
+          {/* Search bar section */}
+          {!isHomePage ? (
+            <>
+              <div className={styles['search-bar']}>
+                <input
+                  type="text"
+                  placeholder="Search for places..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className={styles['search-input']}
+                />
+                <div className={styles['search-icon']}>
+                  <BsSearch />
+                </div>
+              </div>
+              {suggestions.length > 0 && (
+                <ul className={styles.suggestions}>
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className={styles.suggestionItem}
+                    >
+                      <div>{suggestion.formatted_address}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          ) : (
             <Navbar expand="lg" className={styles['menu-section']}>
               <Navbar.Toggle aria-controls="basic-navbar-nav" />
               <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className={`ml-auto gap-4 ${styles.nav}`}>
                   <Nav.Link className={`${styles['nav-link']}`} href="/">Home</Nav.Link>
                   <Nav.Link className={`${styles['nav-link']}`} href="/about">About</Nav.Link>
-                  <Nav.Link className={`${styles['nav-link']}`} href="/car-list">Car List</Nav.Link>
+                  <Nav.Link className={`${styles['nav-link']}`} href="/items-list">Car List</Nav.Link>
                   <Nav.Link className={`${styles['nav-link']}`} href="/place">Place</Nav.Link>
                   <Nav.Link className={`${styles['nav-link']}`} href="/contact">Contact Us</Nav.Link>
                 </Nav>
               </Navbar.Collapse>
             </Navbar>
-          ) : (
-            <div className={styles['search-bar']}>
-              <input
-                type="text"
-                placeholder="Searching for..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className={styles['search-input']}
-              />
-              <div className={styles['search-icon']}>
-                <BsSearch />
-              </div>
-            </div>
           )}
           {/* Profile Section with Dropdown */}
           {!isHomePage ? (
@@ -134,7 +221,7 @@ const Header = () => {
                 <Link href="#"><Image src={cart} className={styles['user-icon']} alt="Cart" /></Link>
               </div>
             </div>
-          ) : isLoggedIn ? (
+          ) : (
             <Dropdown align="end">
               <Dropdown.Toggle variant="link" id="profile-dropdown">
                 <Image src={userIcon} className={styles['user-icon']} alt="User Profile" />
@@ -146,50 +233,8 @@ const Header = () => {
                 <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
-          ) : (
-            <div className={styles['profile-section']}>
-              <Link href={isLoggedIn ? "/profile" : "/auth/login"}><Image src={userIcon} className={styles['user-icon']} alt="User Profile" /></Link>
-            </div>
           )}
         </div>
-        {!isHomePage && (
-          <div className={`${styles['search-bar']} ${styles['mobile-search-bar']}`}>
-            <input
-              type="text"
-              placeholder="Searching for..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className={styles['search-input']}
-            />
-            <div className={styles['search-icon']}>
-              <BsSearch />
-            </div>
-          </div>
-        )}
-        {/* {!isHomePage && (
-          <Container>
-            <div className={`${styles['date-location-picker']} d-flex align-items-center`}>
-              <div className={styles['date-picker']}>
-                <BsPinMapFill />
-                <Form.Control
-                  className={styles.customFormcontrolHeader}
-                  type="date"
-                  value={toDate ? toDate.toISOString().split('T')[0] : ''}
-                  onChange={(e) => setToDate(new Date(e.target.value))}
-                />
-              </div>
-              <div className={styles['date-picker']}>
-                <BsPinMapFill />
-                <Form.Control
-                  className={styles.customFormcontrolHeader}
-                  type="date"
-                  value={toDate ? toDate.toISOString().split('T')[0] : ''}
-                  onChange={(e) => setToDate(new Date(e.target.value))}
-                />
-              </div>
-            </div>
-          </Container>
-        )} */}
       </header>
       {!isHomePage && (<Breadcrumbs />)}
     </>

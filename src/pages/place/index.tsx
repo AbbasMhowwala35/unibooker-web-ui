@@ -3,7 +3,6 @@ import Link from 'next/link';
 import PopularLocations from '../components/common/PopularLocations';
 import styles from "@/styles/Home.module.css";
 import { Jost } from 'next/font/google';
-import { useRouter } from 'next/router';
 import Loader from '../components/common/Loader';
 import api from '../api/api';
 // Define Jost font
@@ -37,7 +36,6 @@ const sliderSettings = {
 
 
 export default function Place() {
-  const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [locationClicked, setLocationClicked] = useState<string | undefined>(undefined);
   const [locations, setLocations] = useState<string | undefined>(undefined);
@@ -45,7 +43,6 @@ export default function Place() {
   const handleLocationClick = (cityName: string) => {
     setLocationClicked(cityName)
     sessionStorage.setItem("selectedCity", cityName);
-    router.push('/car-list')
   };
   const [profile, setProfile] = useState<Profile | null>(null);
 

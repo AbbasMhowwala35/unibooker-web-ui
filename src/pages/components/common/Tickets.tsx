@@ -75,7 +75,7 @@ const Tickets = () => {
 
     useEffect(() => {
         fetchTickets();
-    }, []);
+    },);
 
     const handleTicketClick = (ticket: Ticket) => {
         setSelectedTicket(ticket);

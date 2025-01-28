@@ -239,6 +239,7 @@ img.logo {
   max-width: 800px;
   height: 60px;
   padding: 20px;
+  position: relative;
 }
 
 .dropdown {
@@ -398,4 +399,32 @@ img.logo {
   .date-location-picker {
     flex-direction: column;
   }
+}
+
+.suggestions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  position: absolute;
+  width: 600px;
+  z-index: 1000;
+  overflow-y: auto;
+  top: 85px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.suggestionItem {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #f8f8f8;
+}
+
+.suggestionItem:hover {
+  background-color: #f0f0f0;
 }

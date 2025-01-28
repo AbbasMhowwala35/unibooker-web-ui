@@ -6,14 +6,17 @@ import CarCard from '../components/common/CarCard';
 import { Jost } from 'next/font/google';
 import Loader from '../components/common/Loader';
 import api from '../api/api';
+import { useAuth } from '@/context/AuthContext';
 const jostFont = Jost({
     variable: "--font-jost",
     subsets: ["latin"],
 });
+
 interface Feature {
     id: string;
     name: string;
 }
+
 interface Car {
     id: string;
     name: string;
@@ -53,6 +56,7 @@ interface ItemType {
     status: string;
     image: string | null;
 }
+
 interface Make {
     id: number;
     name: string;
@@ -61,61 +65,59 @@ interface Make {
     imageURL: string;
 }
 
+interface OdometerRange {
+    id: number;
+    odometer: string;
+}
+
 const Index = () => {
     const [homeData, setHomeData] = useState<Car[]>([]);
     const [filteredData, setFilteredData] = useState<Car[]>([]);
     const [loading, setLoading] = useState(true);
     const [itemTypes, setItemTypes] = useState<ItemType[]>([]);
     const [makes, setMakes] = useState<Make[]>([]);
-    const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+    const [selectedBrands, setSelectedBrands] = useState<Array<number>>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [priceRange, setPriceRange] = useState([1, 1000]);
+    const [priceRange, setPriceRange] = useState<number[]>([0, 0]);
     const [years, setYears] = useState<string[]>([]);
-    const [odometerRanges, setOdometerRanges] = useState<string[]>([]);
-    const [selectedOdometer, setSelectedOdometer] = useState<string[]>([]);
+    const [odometerRanges, setOdometerRanges] = useState<OdometerRange[]>([]);
+    const [selectedOdometer, setSelectedOdometer] = useState<number[]>([]);
     const [featureData, setFeatureData] = useState<Feature[]>([]);
     const [selectedFeatures, setSelectedFeatures] = useState<Feature[]>([]);
     const [selectedYears, setSelectedYears] = useState<string[]>([]);
     const [sortOption, setSortOption] = useState<string>("");
+    const { settings } = useAuth();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const amenitiesResponse = await api.get("/amenities");
+                const makesResponse = await api.get("/getMakes");
+                const odometerResponse = await api.get("/vechileOdometer");
+
+                const amenities = amenitiesResponse.data.data.amenities;
+                const makes = makesResponse.data.data.makes;
+                const odometer = odometerResponse.data.data.getodometer;
+
                 const response = await api.get("/homeData");
                 const mergedData = [
                     ...response.data.data.nearby_items,
                     ...response.data.data.featured_items,
                     ...response.data.data.new_arrival_items,
                 ];
+
                 setHomeData(mergedData);
                 setFilteredData(mergedData);
-                setMakes(response.data.data.makes || []);
+                setFeatureData(amenities);
                 setItemTypes(response.data.data.itemTypes || []);
+                setMakes(makes);
+                setOdometerRanges(odometer);
                 const yearsSet = new Set<string>();
                 mergedData.forEach((car) => {
                     const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
                     if (itemInfo.year) yearsSet.add(itemInfo.year);
                 });
-                const odometerSet = new Set<string>();
-                const featuresSet = new Set<string>();
-                mergedData.forEach((car) => {
-                    const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
-                    if (itemInfo.year) yearsSet.add(itemInfo.year);
-                    if (itemInfo.odometer) odometerSet.add(itemInfo.odometer);
-                    if (itemInfo.features_data) {
-                        itemInfo.features_data.forEach((feature: Feature) => {
-                            featuresSet.add(feature.name);
-                        });
-                    }
-                });
                 setYears(Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a)));
-                setOdometerRanges(Array.from(odometerSet));
-                setFeatureData(
-                    Array.from(featuresSet).map((name, index) => ({
-                        id: `feature-${index}`,
-                        name,
-                    }))
-                );
             } catch (error) {
                 console.error("Error fetching home data:", error);
             } finally {
@@ -123,61 +125,87 @@ const Index = () => {
             }
         };
         fetchData();
-    }, [])
+        if (settings) {
+            setPriceRange([
+                parseFloat(settings?.general_minimum_price),
+                parseFloat(settings?.general_maximum_price)
+            ]);
+        }
+    }, [settings])
 
     useEffect(() => {
         const selectedCity = localStorage.getItem("selectedCity");
-        const selectedBrand = sessionStorage.getItem("selectedBrand");
+        // const selectedBrand = sessionStorage.getItem("selectedBrand");
         const filtered = homeData.filter((car) => {
             const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
-            const makeType = itemInfo.make_type || "";
-            const matchesBrandInSession = !selectedBrand || makeType === selectedBrand;
-            const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(makeType);
             const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(car.item_type_id.toString());
             const matchesCity = !selectedCity || car.city === selectedCity;
             const carPrice = parseFloat(car.price.replace(/[^0-9.-]+/g, ""));
             const matchesPrice = carPrice >= priceRange[0] && carPrice <= priceRange[1];
             const matchesYear = selectedYears.length === 0 || selectedYears.includes(itemInfo.year);
-            const matchesOdometer = selectedOdometer.length === 0 || selectedOdometer.includes(itemInfo.odometer);
-            const matchesFeatures = selectedFeatures.every((feature: Feature) =>
-                itemInfo.features_data && itemInfo.features_data.some((f: Feature) => f.name === feature.name)
-            );
-            return matchesBrandInSession && matchesBrand && matchesCategory && matchesCity && matchesPrice && matchesYear && matchesOdometer && matchesFeatures;
+            return matchesCategory && matchesCity && matchesPrice && matchesYear;
         });
         setFilteredData(filtered);
-    }, [selectedBrands, selectedCategories, homeData, priceRange, selectedOdometer, selectedYears]);
+        const filterChanged = [selectedBrands, selectedFeatures, selectedOdometer, sortOption];
+        const hasChanges = filterChanged.some((arr) => arr.length > 0);
+
+        if (hasChanges) {
+            fetchFilteredData();
+        }
+    }, [selectedCategories, priceRange, selectedYears, selectedBrands, selectedFeatures, selectedOdometer, sortOption]);
 
     useEffect(() => {
-        const filtered = homeData.filter((car) => {
-            const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
-            const matchesFeatures = selectedFeatures.every((feature: Feature) =>
-                itemInfo.features_data && itemInfo.features_data.some((f: Feature) => f.name === feature.name)
-            );
-            return matchesFeatures;
-        });
-        setFilteredData(filtered);
-    }, [selectedFeatures, homeData]);
+        const data = sessionStorage.getItem("data");
+        if (data) {
+            setFilteredData(JSON.parse(data));
+        }
+    }, []);
+    
+    const fetchFilteredData = async () => {
+        try {
+            setLoading(true);
+            const params: Record<string, string> = {};
+
+            if (selectedBrands.length > 0) {
+                params["meta"] = `{"make_type":"[${selectedBrands.join(",")}]"}`
+            }
+
+            if (selectedFeatures.length > 0) {
+                const featureIds = selectedFeatures.map(f => f.id).join(",");
+                params["facility"] = `[${featureIds}]`;
+            }
+
+            if (selectedOdometer.length > 0) {
+                params["odometer"] = `[${selectedOdometer.join(",")}]`;
+            }
+
+            if (sortOption) {
+                params["sort"] = sortOption;
+            }
+
+            const response = await api.post("/itemSearch", params);
+            const filteredItems = response.data.data.items;
+            setFilteredData(filteredItems);
+        } catch (error) {
+            console.error("Error fetching filtered data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSortChange = (option: string) => {
         setSortOption(option);
-        const sortedData = [...filteredData];
-
-        if (option === "cheapest") {
-            sortedData.sort((a, b) => parseFloat(a.price.replace(/[^0-9.-]+/g, "")) - parseFloat(b.price.replace(/[^0-9.-]+/g, "")));
-        } else if (option === "nearest") {
-            sortedData.sort((a, b) => {
-                const cityA = a.city || "";
-                const cityB = b.city || "";
-                return cityA.localeCompare(cityB);
-            });
-            setFilteredData(sortedData);
-        };
+        fetchFilteredData();
     }
 
-    const handleBrandChange = (brand: string) => {
-        setSelectedBrands((prev) =>
-            prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
-        );
+    const handleBrandChange = (id: number) => {
+        setSelectedBrands((prev) => {
+            const updatedBrands = prev.includes(id)
+                ? prev.filter((b) => b !== id)
+                : [...prev, id];
+            fetchFilteredData();
+            return updatedBrands;
+        });
     };
 
     const handleCategoryChange = (category: string) => {
@@ -186,16 +214,14 @@ const Index = () => {
         );
     };
 
-    const saveSelectedCar = (car: Car) => {
-        sessionStorage.setItem("selectedCar", JSON.stringify(car));
-    };
-
     const handleFeatureChange = (feature: Feature) => {
-        setSelectedFeatures((prev) =>
-            prev.some((f) => f.id === feature.id)
+        setSelectedFeatures((prev) => {
+            const updatedFeatures = prev.some((f) => f.id === feature.id)
                 ? prev.filter((item) => item.id !== feature.id)
-                : [...prev, feature]
-        );
+                : [...prev, feature];
+            fetchFilteredData();
+            return updatedFeatures;
+        });
     };
 
     const handleYearChange = (year: string) => {
@@ -204,10 +230,23 @@ const Index = () => {
         );
     };
 
+    const handleOdometerChange = (odometerId: number) => {
+        setSelectedOdometer((prev) => {
+            const updatedOdometer = prev.includes(odometerId)
+                ? prev.filter((o) => o !== odometerId)
+                : [...prev, odometerId];
+            fetchFilteredData();
+            return updatedOdometer;
+        });
+    };
+
+    const saveSelectedCar = (car: Car) => {
+        sessionStorage.setItem("selectedCar", JSON.stringify(car));
+    };
+
     if (loading) {
         return <Loader />;
     }
-
 
     return (
         <>
@@ -230,9 +269,9 @@ const Index = () => {
                                         <h5>Sort By</h5>
                                         <select onChange={(e) => handleSortChange(e.target.value)} value={sortOption}>
                                             <option value="">Select Sort</option>
-                                            <option value="cheapest">Cheapest Price</option>
-                                            <option value="nearest">Nearest Location</option>
-                                            <option value="mostViewed">Most Viewed</option>
+                                            <option value="nearest_location">Nearest Location</option>
+                                            <option value="cheapest_price">Cheapest Price</option>
+                                            <option value="most_viewed">Most Viewed</option>
                                         </select>
                                     </div>
                                 </Col>
@@ -259,8 +298,8 @@ const Index = () => {
                                     <div>Range: ${priceRange[0]} - ${priceRange[1]}</div>
                                     <input
                                         type="range"
-                                        min="1"
-                                        max="1000"
+                                        min={settings?.general_minimum_price}
+                                        max={settings?.general_maximum_price}
                                         step="50"
                                         value={priceRange[0]}
                                         onChange={(e) => setPriceRange([parseFloat(e.target.value), priceRange[1]])}
@@ -273,8 +312,8 @@ const Index = () => {
                                             <input
                                                 type="checkbox"
                                                 id={`make-${make.id}`}
-                                                checked={selectedBrands.includes(make.name) || sessionStorage.getItem("selectedBrand") === make.name}
-                                                onChange={() => handleBrandChange(make.name)}
+                                                checked={selectedBrands.includes(make.id) || sessionStorage.getItem("selectedBrand") === make.name}
+                                                onChange={() => handleBrandChange(make.id)}
                                             />
                                             <label htmlFor={`make-${make.id}`}>{make.name}</label>
                                         </li>
@@ -282,21 +321,15 @@ const Index = () => {
                                 </ul>
                                 <h5>Odometer</h5>
                                 <ul>
-                                    {odometerRanges.map((range) => (
-                                        <li key={range}>
+                                    {odometerRanges.map((odometer) => (
+                                        <li key={odometer.id}>
                                             <input
                                                 type="checkbox"
-                                                id={`odometer-${range}`}
-                                                checked={selectedOdometer.includes(range)}
-                                                onChange={() => {
-                                                    setSelectedOdometer((prev) =>
-                                                        prev.includes(range)
-                                                            ? prev.filter((item) => item !== range)
-                                                            : [...prev, range]
-                                                    );
-                                                }}
+                                                id={`odometer-${odometer.id}`}
+                                                checked={selectedOdometer.includes(odometer.id)}
+                                                onChange={() => handleOdometerChange(odometer.id)}
                                             />
-                                            <label htmlFor={`odometer-${range}`}>{range}</label>
+                                            <label htmlFor={`odometer-${odometer.id}`}>{odometer.odometer}</label>
                                         </li>
                                     ))}
                                 </ul>

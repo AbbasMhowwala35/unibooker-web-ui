@@ -163,7 +163,7 @@ const CarDetails = () => {
             <section className={`${styles.page} ${jostFont.variable} ${styles.carDetailMain}`}>
                 <Container>
                     <Row>
-                        <Col md={7}>
+                        <Col md={6}>
                             <div className={styles.carDetailImage}>
                                 <Zoom>
                                     <Image
@@ -192,7 +192,7 @@ const CarDetails = () => {
                                 </Row>
                             </div>
                         </Col>
-                        <Col md={5}>
+                        <Col md={6}>
                             <div className={styles.carDetailContent}>
                                 <div className={styles.carDetailContentHeading}>
                                     <div>
