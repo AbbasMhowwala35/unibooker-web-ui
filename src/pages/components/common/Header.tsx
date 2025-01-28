@@ -6,9 +6,9 @@ import userIcon from '../../../Images/user.svg';
 import wishlist from '../../../Images/heart.svg';
 import cart from '../../../Images/cart.svg';
 import styles from "@/styles/Layout.module.css";
-import { Container, Navbar, Nav, Form, Dropdown } from 'react-bootstrap';
+import { Navbar, Nav, Dropdown } from 'react-bootstrap';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { BsPinMapFill, BsSearch } from 'react-icons/bs';
+import { BsSearch } from 'react-icons/bs';
 import Breadcrumbs from './Breadcrumbs';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useAuth } from '@/context/AuthContext';
@@ -27,7 +27,7 @@ const Header = () => {
   const { logout } = useAuth();
   const isHomePage = router.pathname === "/";
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [toDate, setToDate] = useState<Date | null>(null);
+  // const [toDate, setToDate] = useState<Date | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -166,7 +166,7 @@ const Header = () => {
             </div>
           </div>
         )}
-        {!isHomePage && (
+        {/* {!isHomePage && (
           <Container>
             <div className={`${styles['date-location-picker']} d-flex align-items-center`}>
               <div className={styles['date-picker']}>
@@ -189,7 +189,7 @@ const Header = () => {
               </div>
             </div>
           </Container>
-        )}
+        )} */}
       </header>
       {!isHomePage && (<Breadcrumbs />)}
     </>

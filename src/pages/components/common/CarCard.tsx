@@ -36,6 +36,10 @@ const CarCard: React.FC<CarCardProps> = ({
         e.stopPropagation()
 
         const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        if (!userData?.token) {
+            toast.info("Please log in to use the wishlist.");
+            return;
+        }
         const payload = {
             item_id: id,
             token: userData?.token,
@@ -75,7 +79,7 @@ const CarCard: React.FC<CarCardProps> = ({
                 <Image className={styles.most_viewed_cars_img} src={image} width={315} height={400} alt={name} />
             </div>
             <div className={styles.most_viewed_cars_cards_content_top}>
-                <Link href={`/cars/${id}`} onClick={() => saveSelectedCar({ id, name, image, item_rating })}>  <h3>{name}</h3>  </Link>
+                <Link href={`/items/${id}`} onClick={() => saveSelectedCar({ id, name, image, item_rating })}>  <h3>{name}</h3>  </Link>
             </div>
             <div className={styles.most_viewed_cars_cards_content_bottom}>
                 <div className={styles.most_viewed_cars_cards_content_bottom_content}>
