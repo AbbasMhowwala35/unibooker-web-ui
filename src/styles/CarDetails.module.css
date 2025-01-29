@@ -185,11 +185,12 @@
   margin-bottom: 5px;
 }
 
-.personBox a {
+.personBox button {
   color: #17BEBB;
   font-size: 16px;
   text-decoration: none;
   font-weight: 600;
+  border: none;
 }
 
 .personBoxIcon svg {

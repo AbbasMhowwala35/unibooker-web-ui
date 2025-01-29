@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Col, Container, Row, Tab, Tabs } from 'react-bootstrap'
 import EditProfile from '../components/common/EditProfile'
 import Booking from '../components/common/Booking'
@@ -20,28 +20,12 @@ const jostFont = Jost({
 });
 const Index = () => {
     const [activeKey, setActiveKey] = useState<string>("editProfile");
-    const [userProfile, setUserProfile] = useState(null);
-    const [vendorReviews, setVendorReviews] = useState(null);
-    const [userItems, setUserItems] = useState(null);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [loading, setLoading] = useState(false);
-
-
-    useEffect(() => {
-        const profileData = sessionStorage.getItem("userProfile");
-        const reviewsData = sessionStorage.getItem("vendorReviews");
-        const itemsData = sessionStorage.getItem("userItems");
-
-        if (profileData) setUserProfile(JSON.parse(profileData));
-        if (reviewsData) setVendorReviews(JSON.parse(reviewsData));
-        if (itemsData) setUserItems(JSON.parse(itemsData));
-    }, []);
     
     if (loading) {
         return <Loader />;
     }
-
-    console.log(userItems,vendorReviews,userProfile)
 
     return (
         <div className={`${styles.page} ${jostFont.variable}`}>

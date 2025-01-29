@@ -11,6 +11,7 @@ import { FaCalendarAlt } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 import api from '../api/api';
 import { toast, ToastContainer } from 'react-toastify';
+import Loader from '../components/common/Loader';
 interface Profile {
     token: string;
     id: string;
@@ -42,6 +43,7 @@ const CheckAvailability = () => {
     const [selectedCar, setSelectedCar] = useState<CarDetails | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [isavailable, setIsAvailable] = useState<boolean>(false);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const storedData = localStorage.getItem('userData');
@@ -77,6 +79,16 @@ const CheckAvailability = () => {
             toast.error("Car details are missing.");
             return;
         }
+
+        const checkInDate = fromDate.toISOString().split('T')[0];
+        const checkOutDate = toDate.toISOString().split('T')[0];
+        const isSameDay = checkInDate === checkOutDate;
+
+        if (isSameDay && startTime === endTime) {
+            toast.error("For same-day bookings, end time must be different from start time.");
+            return;
+        }
+
         const checkoutData = {
             ...selectedCar,
             checkInDate: fromDate.toISOString().split('T')[0],
@@ -119,14 +131,6 @@ const CheckAvailability = () => {
         return null;
     };
 
-    const handleDateChange = async (dates: any) => {
-        if (Array.isArray(dates)) {
-            setFromDate(dates[0]);
-            setToDate(dates[1]);
-            await checkAvailability(dates[0]);
-        }
-    };
-
     function formatAMPM(date: Date): string {
         const hours = date.getHours();
         const minutes = date.getMinutes();
@@ -135,37 +139,6 @@ const CheckAvailability = () => {
         const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
         return `${formattedHours}:${formattedMinutes} ${ampm}`;
     }
-
-
-    const checkAvailability = async (selectedDate: Date) => {
-        const selectedDateStr = selectedDate.toISOString().split('T')[0];
-        const requestData = {
-            item_id: itemId,
-            check_in: selectedDateStr,
-            check_out: selectedDateStr,
-            token: profile?.token,
-        };
-
-        try {
-            const response = await api.post('/checkBookingAvailability', requestData);
-            const data = response.data.data;
-            const { availability } = data;
-            if (response.data.status === 200) {
-                if (availability.is_available) {
-                    setIsAvailable(true);
-                    setStartTime(response.data.data.availability.next_start_time)
-                }
-            }
-        } catch (error: any) {
-            setIsAvailable(false);
-            if (error.response?.status === 422) {
-                const overlapDetails = error.response.data.data.bookingOverlapDetails;
-                toast.error(error.response.data.message);
-            } else {
-                console.error("An unexpected error occurred: ", error);
-            }
-        }
-    };
 
     function formatTime(date: Date): string {
         const hours = date.getHours();
@@ -176,6 +149,63 @@ const CheckAvailability = () => {
         return `${formattedHours}:${formattedMinutes} ${ampm}`;
     }
 
+    const handleDateChange = async (dates: any) => {
+        if (Array.isArray(dates) && dates.length === 2) {
+            const adjustedFromDate = new Date(dates[0]);
+            adjustedFromDate.setHours(12, 0, 0, 0);
+            setFromDate(adjustedFromDate);
+            const adjustedToDate = new Date(dates[1]);
+            adjustedToDate.setHours(12, 0, 0, 0);
+            setToDate(adjustedToDate);
+            if (adjustedFromDate.toISOString().split('T')[0] === adjustedToDate.toISOString().split('T')[0]) {
+                setStartTime('12:00 AM');
+                const startTimeObj = new Date(`1970-01-01T12:00:00Z`);
+                startTimeObj.setMinutes(startTimeObj.getMinutes() + 30);
+                setEndTime(formatAMPM(startTimeObj));
+            }
+            await checkAvailability(adjustedFromDate, adjustedToDate);
+        }
+    };
+
+    const checkAvailability = async (fromDate: Date, toDate: Date) => {
+        const fromDateStr = fromDate.toISOString().split('T')[0];
+        const toDateStr = toDate.toISOString().split('T')[0];
+        const requestData = {
+            item_id: itemId,
+            check_in: fromDateStr,
+            check_out: toDateStr,
+            token: profile?.token,
+        };
+        setLoading(true)
+        try {
+            const response = await api.post('/checkBookingAvailability', requestData);
+            const data = response.data.data;
+            const { availability } = data;
+            if (response.data.status === 200) {
+                if (availability.is_available) {
+                    setIsAvailable(true);
+                    setStartTime(response.data.data.availability.next_start_time)
+                }
+                setLoading(false)
+            }
+        } catch (error: any) {
+            setIsAvailable(false);
+            if (error.response?.status === 422) {
+                const overlapDetails = error.response.data.data.bookingOverlapDetails;
+                const bookingMessages = overlapDetails.map((booking: any) =>
+                    `The Vehicle is Booked on ${booking.date} from ${booking.start_time} to ${booking.end_time}`
+                ).join("\n");
+
+                toast.error(`Dates overlap with existing bookings:\n${bookingMessages}`);
+            } else {
+                console.error("An unexpected error occurred: ", error);
+            }
+        }
+        finally {
+            setLoading(false)
+        }
+    };
+
     useEffect(() => {
         if (startTime) {
             try {
@@ -183,16 +213,16 @@ const CheckAvailability = () => {
                 let [hours, minutes] = time.split(":").map(Number);
                 if (period === "PM" && hours !== 12) hours += 12;
                 if (period === "AM" && hours === 12) hours = 0;
-                const startDate = new Date(1970, 0, 1, hours, minutes);
+                const startSlotTime = new Date(1970, 0, 1, hours, minutes);
+                const checkInDate = fromDate ? fromDate.toISOString().split('T')[0] : null;
+                const checkOutDate = toDate ? toDate.toISOString().split('T')[0] : null;
+                const isSameDay = checkInDate === checkOutDate;
+                if (isSameDay) {
+                    startSlotTime.setMinutes(startSlotTime.getMinutes() + 30);
+                }
                 const slots: { start: string; end: string }[] = [];
-                const currentTime = new Date();
-                const currentHour = currentTime.getHours();
-                const currentMinute = currentTime.getMinutes();
-                const startSlotTime = currentTime.getTime() + (30 - currentMinute % 30) * 60000;
-                const startSlotDate = new Date(startSlotTime);
-
                 for (let i = 0; i < 24; i++) {
-                    const startSlot = new Date(startSlotDate.getTime() + i * 30 * 60000);
+                    const startSlot = new Date(startSlotTime.getTime() + i * 30 * 60000);
                     const endSlot = new Date(startSlot.getTime() + 30 * 60000);
                     slots.push({
                         start: formatTime(startSlot),
@@ -200,19 +230,46 @@ const CheckAvailability = () => {
                     });
                 }
                 setTimeSlots(slots);
+                if (fromDate && toDate) {
+                    const checkInDate = fromDate.toISOString().split('T')[0];
+                    const checkOutDate = toDate.toISOString().split('T')[0];
+                    if (checkInDate === checkOutDate && startTime === endTime) {
+                        toast.error("For same-day bookings, end time must be different from start time.");
+                        setEndTime('');
+                    }
+                }
             } catch (error) {
                 console.error("Error generating time slots:", error);
             }
         }
-    }, [startTime]);
+    }, [startTime, fromDate, toDate]);
 
     const handleStartTimeChange = (e: any) => {
         const selectedStartTime = e.target.value;
         setStartTime(selectedStartTime);
-        const startTimeObj = new Date(`1970-01-01T${selectedStartTime}:00Z`);
-        startTimeObj.setMinutes(startTimeObj.getMinutes() + 30);
-        setEndTime(formatAMPM(startTimeObj));
+        if (fromDate && toDate) {
+            const checkInDate = fromDate.toISOString().split('T')[0];
+            const checkOutDate = toDate.toISOString().split('T')[0];
+            const isSameDay = checkInDate === checkOutDate;
+
+            if (isSameDay) {
+                const [time, period] = selectedStartTime.split(" ");
+                let [hours, minutes] = time.split(":").map(Number);
+                if (period === "PM" && hours !== 12) hours += 12;
+                if (period === "AM" && hours === 12) hours = 0;
+                const startTimeObj = new Date(1970, 0, 1, hours, minutes);
+                startTimeObj.setMinutes(startTimeObj.getMinutes() + 30);
+                const newEndTime = formatTime(startTimeObj);
+                setEndTime(newEndTime);
+            } else {
+                setEndTime(selectedStartTime);
+            }
+        }
     };
+
+    if (loading) {
+        return <Loader />;
+    }
 
     return (
         <main>
@@ -237,10 +294,7 @@ const CheckAvailability = () => {
                                     <span className={styles.available}></span> Available
                                 </p>
                                 <p>
-                                    <span className={styles.booked}></span> Booked
-                                </p>
-                                <p>
-                                    <span className={styles.unavailable}></span> Unavailable
+                                    <span className={styles.unavailable}></span> Booked
                                 </p>
                             </div>
                         </div>

@@ -6,6 +6,18 @@
     font-family: var(--font-jost), sans-serif;
 }
 
+.most_viewed_cars {
+    text-align: center;
+    margin: 100px 0;
+}
+
+.cars_row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
 .ProfileTabs {}
 
 .ProfileTabsUsername {
@@ -36,6 +48,7 @@
     text-transform: capitalize;
 
 }
+
 .profileImageDisplay {
     width: 150px;
     height: 150px;
@@ -410,7 +423,7 @@
 }
 
 .ProfileCreateTicketForm {
-    margin: 30px 0  ;
+    margin: 30px 0;
 }
 
 .ProfileCreateTicketForm input {
@@ -457,27 +470,27 @@
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Ticket Header */
-  .TicketHeader {
+}
+
+/* Ticket Header */
+.TicketHeader {
     margin-bottom: 20px;
-  }
-  
-  .TicketHeader h4 {
+}
+
+.TicketHeader h4 {
     color: #6c757d;
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 5px;
-  }
-  
-  .TicketHeader h3 {
+}
+
+.TicketHeader h3 {
     color: #343a40;
     font-size: 24px;
     margin-bottom: 15px;
-  }
-  
-  .TicketDescription {
+}
+
+.TicketDescription {
     color: #616161;
     font-size: 16px;
     line-height: 1.5;
@@ -485,55 +498,55 @@
     padding: 30px;
     margin: 30px 0;
     border-radius: 20px;
-  }
-  
-  /* Chat Section */
-  .ChatSection {
+}
+
+/* Chat Section */
+.ChatSection {
     margin-top: 20px;
-  }
-  
-  .ChatBubbleLeft,
-  .ChatBubbleRight {
+}
+
+.ChatBubbleLeft,
+.ChatBubbleRight {
     max-width: max-content;
     border-radius: 20px;
     font-size: 14px;
     line-height: 1.4;
     margin-bottom: 10px;
     padding: 15px;
-  }
-  
-  .ChatBubbleLeft {
-    background-color: rgb(233 65 101 / 80%); 
+}
+
+.ChatBubbleLeft {
+    background-color: rgb(233 65 101 / 80%);
     color: #fff;
     align-self: flex-start;
-  }
-  
-  .ChatBubbleRight {
+}
+
+.ChatBubbleRight {
     background-color: transparent;
     color: #343a40;
     align-self: flex-end;
     margin-left: auto;
     border: 1px solid #ccc;
-  }
-  
-  .ChatTimestamp {
+}
+
+.ChatTimestamp {
     display: block;
     font-size: 12px;
     color: #adb5bd;
     margin-bottom: 10px;
-  }
-  
-  /* Message Input Section */
-  .MessageInputSection {
+}
+
+/* Message Input Section */
+.MessageInputSection {
     display: flex;
     align-items: center;
     border-top: 1px solid #dee2e6;
     margin-top: 20px;
     padding-top: 10px;
     position: relative;
-  }
-  
-  .MessageInput {
+}
+
+.MessageInput {
     flex-grow: 1;
     padding: 10px 15px;
     border: 1px solid #dee2e6;
@@ -544,13 +557,13 @@
     height: 60px;
     width: 100%;
     position: relative;
-  }
-  
-  .MessageInput:focus {
+}
+
+.MessageInput:focus {
     border-color: #007bff;
-  }
-  
-  .SendMessageButton {
+}
+
+.SendMessageButton {
     background-color: #3ebd93 !important;
     color: #fff;
     border: none;
@@ -566,32 +579,38 @@
     height: 40px;
     border-radius: 12px !important;
     top: 0;
-  }
-  
-  .SendMessageButton:hover {
+}
+
+.SendMessageButton:hover {
     background-color: #0056b3;
-  }
-  @media screen and (max-width: 767px) {
+}
+
+@media screen and (max-width: 767px) {
     .ProfileChildCardForm {
         padding: 20px;
     }
+
     .ProfileTabsMain {
         margin: 20px 0;
     }
-    .ProfileViewCard, .ProfileViewCardRow {
+
+    .ProfileViewCard,
+    .ProfileViewCardRow {
         flex-direction: column !important;
         gap: 1rem !important;
     }
+
     .ProfileTabsMain {
         flex-direction: row;
         flex-wrap: nowrap;
         overflow-y: scroll;
     }
+
     .ProfileTabsMain li button {
         width: 180px;
     }
-  }
+}
 
-  .RechargeForm {
+.RechargeForm {
     margin: 20px 0;
-  }
+}

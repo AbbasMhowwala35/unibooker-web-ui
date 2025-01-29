@@ -114,7 +114,7 @@ const Booking = () => {
       if (response.data.status === 200) {
         const bookings: Booking[] = response.data.data.Bookings || [];
         setBookings({
-          upcoming: bookings.filter(booking => booking.status === "Confirmed") || [],
+          upcoming: bookings.filter(booking => booking.status === "Confirmed" || booking.status === "Pending") || [],
           previous: bookings.filter(booking => booking.status === "Completed") || [],
           cancelled: bookings.filter(booking => booking.status === "Cancelled") || [],
         });

@@ -5,7 +5,6 @@ import { Button, Col, Container, Modal, Row } from 'react-bootstrap';
 import { Jost } from 'next/font/google';
 import { BsFillSendFill, BsStarFill } from 'react-icons/bs'
 import Image from 'next/image';
-import Link from 'next/link';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
 import Newsletter from '../components/common/Newsletter';
@@ -148,7 +147,7 @@ const CarDetails = () => {
             sessionStorage.setItem("userProfile", JSON.stringify(userProfile));
             sessionStorage.setItem("vendorReviews", JSON.stringify(vendorReviews));
             sessionStorage.setItem("userItems", JSON.stringify(userItems));
-            router.push("/profile");
+            router.push("/host-profile");
         } catch (error) {
             console.error("Error fetching data for profile view:", error);
         }
@@ -211,7 +210,7 @@ const CarDetails = () => {
                                         <Image src={carDetails?.item_info?.host_profile_image} alt={carDetails?.item_info?.host_first_name} className={styles.postedPersonImg} width={65} height={65} />
                                         <div className={styles.personBoxContact}>
                                             <h4>Hosted by {carDetails?.item_info?.host_first_name} {carDetails?.item_info?.host_last_name}</h4>
-                                            <Link href="#" onClick={handleViewProfile}>View Profile</Link>
+                                            <button onClick={handleViewProfile}>View Profile</button>
                                         </div>
                                     </div>
                                     <div className={styles.personBoxIcon}>

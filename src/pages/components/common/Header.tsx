@@ -41,6 +41,7 @@ interface SearchPlace {
 
 
 const Header = () => {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const router = useRouter();
   const { logout } = useAuth();
   const isHomePage = router.pathname === "/";
@@ -49,7 +50,7 @@ const Header = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null);
-  console.log(selectedPlace)
+  
   useEffect(() => {
     const storedData = localStorage.getItem("userData");
     if (storedData) {
@@ -117,7 +118,7 @@ const Header = () => {
   };
 
   const triggerItemSearch = async (city: string): Promise<void> => {
-    console.log(city)
+    
     if (!userLocation) return;
     const { lat, long } = userLocation;
     try {
@@ -187,7 +188,7 @@ const Header = () => {
                 <Nav className={`ml-auto gap-4 ${styles.nav}`}>
                   <Nav.Link className={`${styles['nav-link']}`} href="/">Home</Nav.Link>
                   <Nav.Link className={`${styles['nav-link']}`} href="/about">About</Nav.Link>
-                  <Nav.Link className={`${styles['nav-link']}`} href="/items-list">Car List</Nav.Link>
+                  <Nav.Link className={`${styles['nav-link']}`} href="/items-list">Items List</Nav.Link>
                   <Nav.Link className={`${styles['nav-link']}`} href="/place">Place</Nav.Link>
                   <Nav.Link className={`${styles['nav-link']}`} href="/contact">Contact Us</Nav.Link>
                 </Nav>

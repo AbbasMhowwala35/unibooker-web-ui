@@ -8,6 +8,7 @@ const Loader: React.FC = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: "transparent",
         height: "100vh",
       }}
     >

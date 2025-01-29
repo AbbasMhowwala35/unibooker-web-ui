@@ -36,9 +36,10 @@ const EditProfile = () => {
   const [isPhoneBeingEdited, setIsPhoneBeingEdited] = useState(false);
   const [previousPhone, setPreviousPhone] = useState<string>('');
   const [isCountrySelected, setIsCountrySelected] = useState(false);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [isPhoneValid, setIsPhoneValid] = useState(false)
   const [editedPhone, setEditedPhone] = useState<PhoneType | null>(null);
-  console.log(isPhoneValid)
+  
   useEffect(() => {
     const storedData = localStorage.getItem("userData");
     if (storedData) {

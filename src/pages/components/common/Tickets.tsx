@@ -20,6 +20,7 @@ interface Ticket {
 }
 
 const Tickets = () => {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const [activeTab, setActiveTab] = useState("Open");
     const [openTickets, setOpenTickets] = useState<Ticket[]>([]);
     const [closedTickets, setClosedTickets] = useState<Ticket[]>([]);
@@ -75,7 +76,7 @@ const Tickets = () => {
 
     useEffect(() => {
         fetchTickets();
-    },);
+    }, []);
 
     const handleTicketClick = (ticket: Ticket) => {
         setSelectedTicket(ticket);
@@ -149,7 +150,7 @@ const Tickets = () => {
     const handleBackClick = async () => {
         setSelectedTicket(null)
     }
-    console.log(ticketCreated)
+    
     const tickets = activeTab === "Open" ? openTickets : closedTickets;
 
     return (
