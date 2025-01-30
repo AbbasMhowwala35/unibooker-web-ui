@@ -173,9 +173,9 @@ export default function Home() {
     router.push('/items-list')
   };
 
-  const handleBrandClick = async (brandName: string) => {
-    setBrandClicked(brandName);
-    sessionStorage.setItem("selectedBrand", brandName);
+  const handleBrandClick = async (id: string) => {
+    setBrandClicked(id);
+    sessionStorage.setItem("selectedBrand", id);
     router.push('/items-list');
   };  
 
@@ -327,7 +327,7 @@ export default function Home() {
             <div className={styles.company_logos_row}>
               {homeData?.makes.map((make) => (
                 <div key={make.id}>
-                  <div className={styles.company_logos_div}  onClick={() => handleBrandClick(make.name)} style={{ cursor: "pointer" }}>
+                  <div className={styles.company_logos_div}  onClick={() => handleBrandClick(make.id)} style={{ cursor: "pointer" }}>
                     <Image
                       src={make.imageURL}
                       alt={make.name}

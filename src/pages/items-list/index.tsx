@@ -16,7 +16,6 @@ interface Feature {
     id: string;
     name: string;
 }
-
 interface Car {
     id: string;
     name: string;
@@ -56,7 +55,6 @@ interface ItemType {
     status: string;
     image: string | null;
 }
-
 interface Make {
     id: number;
     name: string;
@@ -64,7 +62,6 @@ interface Make {
     status: string;
     imageURL: string;
 }
-
 interface OdometerRange {
     id: number;
     odometer: string;
@@ -87,7 +84,7 @@ const Index = () => {
     const [selectedYears, setSelectedYears] = useState<string[]>([]);
     const [sortOption, setSortOption] = useState<string>("");
     const { settings } = useAuth();
-
+    const [hasFilterChanged, setHasFilterChanged] = useState(false);
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -135,7 +132,6 @@ const Index = () => {
 
     useEffect(() => {
         const selectedCity = localStorage.getItem("selectedCity");
-        // const selectedBrand = sessionStorage.getItem("selectedBrand");
         const filtered = homeData.filter((car) => {
             const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
             const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(car.item_type_id.toString());
@@ -146,22 +142,22 @@ const Index = () => {
             return matchesCategory && matchesCity && matchesPrice && matchesYear;
         });
         setFilteredData(filtered);
-        const filterChanged = [selectedBrands, selectedFeatures, selectedOdometer, sortOption];
-        const hasChanges = filterChanged.some((arr) => arr.length > 0);
-
-        if (hasChanges) {
-            fetchFilteredData();
-        }
-    }, [selectedCategories, priceRange, selectedYears, selectedBrands, selectedFeatures, selectedOdometer, sortOption]);
+    }, [selectedCategories, priceRange, selectedYears]);
 
     useEffect(() => {
         const data = sessionStorage.getItem("data");
+        const selectedBrand = Number(sessionStorage.getItem("selectedBrand"));
         if (data) {
             setFilteredData(JSON.parse(data));
         }
+
+        if (selectedBrand) {
+            handleBrandChange(selectedBrand)
+        }
     }, []);
-    
+
     const fetchFilteredData = async () => {
+        if (!hasFilterChanged) return;
         try {
             setLoading(true);
             const params: Record<string, string> = {};
@@ -186,6 +182,7 @@ const Index = () => {
             const response = await api.post("/itemSearch", params);
             const filteredItems = response.data.data.items;
             setFilteredData(filteredItems);
+            setHasFilterChanged(false);
         } catch (error) {
             console.error("Error fetching filtered data:", error);
         } finally {
@@ -193,9 +190,15 @@ const Index = () => {
         }
     };
 
+    useEffect(() => {
+        if (hasFilterChanged) {
+            fetchFilteredData();
+        }
+    }, [hasFilterChanged]);
+
     const handleSortChange = (option: string) => {
         setSortOption(option);
-        fetchFilteredData();
+        setHasFilterChanged(true);
     }
 
     const handleBrandChange = (id: number) => {
@@ -203,7 +206,7 @@ const Index = () => {
             const updatedBrands = prev.includes(id)
                 ? prev.filter((b) => b !== id)
                 : [...prev, id];
-            fetchFilteredData();
+            setHasFilterChanged(true);
             return updatedBrands;
         });
     };
@@ -219,7 +222,7 @@ const Index = () => {
             const updatedFeatures = prev.some((f) => f.id === feature.id)
                 ? prev.filter((item) => item.id !== feature.id)
                 : [...prev, feature];
-            fetchFilteredData();
+            setHasFilterChanged(true);
             return updatedFeatures;
         });
     };
@@ -235,7 +238,7 @@ const Index = () => {
             const updatedOdometer = prev.includes(odometerId)
                 ? prev.filter((o) => o !== odometerId)
                 : [...prev, odometerId];
-            fetchFilteredData();
+            setHasFilterChanged(true);
             return updatedOdometer;
         });
     };
@@ -243,6 +246,10 @@ const Index = () => {
     const saveSelectedCar = (car: Car) => {
         sessionStorage.setItem("selectedCar", JSON.stringify(car));
     };
+
+    useEffect(() => {
+        fetchFilteredData();
+    }, [selectedBrands, selectedFeatures, selectedOdometer, sortOption]);
 
     if (loading) {
         return <Loader />;

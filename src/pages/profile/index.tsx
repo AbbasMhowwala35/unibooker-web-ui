@@ -41,7 +41,6 @@ const Index = () => {
                     <Row className='mt-5'>
                         <Col md={3}>
                             <div className={styles.ProfileTabs}>
-                                <p className={styles.ProfileTabsUsername}>Hello, Alex</p>
                                 <h3>Account Settings</h3>
                                 <Tabs
                                     activeKey={activeKey}

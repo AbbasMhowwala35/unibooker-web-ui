@@ -209,20 +209,27 @@ const CheckAvailability = () => {
     useEffect(() => {
         if (startTime) {
             try {
-                const [time, period] = startTime.split(" ");
+                let [time, period] = startTime.split(" ");
                 let [hours, minutes] = time.split(":").map(Number);
                 if (period === "PM" && hours !== 12) hours += 12;
                 if (period === "AM" && hours === 12) hours = 0;
-                const startSlotTime = new Date(1970, 0, 1, hours, minutes);
-                const checkInDate = fromDate ? fromDate.toISOString().split('T')[0] : null;
-                const checkOutDate = toDate ? toDate.toISOString().split('T')[0] : null;
-                const isSameDay = checkInDate === checkOutDate;
-                if (isSameDay) {
-                    startSlotTime.setMinutes(startSlotTime.getMinutes() + 30);
+                let nextStartSlot = new Date(1970, 0, 1, hours, minutes);
+                if (fromDate && toDate && fromDate.toISOString().split('T')[0] === new Date().toISOString().split('T')[0] && startTime === "12:00 AM") {
+                    const currentTime = new Date();
+                    let currentHours = currentTime.getHours();
+                    let currentMinutes = currentTime.getMinutes();
+                    let roundedMinutes = Math.ceil(currentMinutes / 30) * 30;
+                    if (roundedMinutes === 60) {
+                        roundedMinutes = 0;
+                        currentHours = (currentHours + 1) % 24;
+                    }
+                    nextStartSlot = new Date(1970, 0, 1, currentHours, roundedMinutes);
+                } else {
+                    nextStartSlot.setMinutes(nextStartSlot.getMinutes() + 30);
                 }
                 const slots: { start: string; end: string }[] = [];
                 for (let i = 0; i < 24; i++) {
-                    const startSlot = new Date(startSlotTime.getTime() + i * 30 * 60000);
+                    const startSlot = new Date(nextStartSlot.getTime() + i * 30 * 60000);
                     const endSlot = new Date(startSlot.getTime() + 30 * 60000);
                     slots.push({
                         start: formatTime(startSlot),
@@ -242,7 +249,7 @@ const CheckAvailability = () => {
                 console.error("Error generating time slots:", error);
             }
         }
-    }, [startTime, fromDate, toDate]);
+    }, [startTime, fromDate, toDate]);        
 
     const handleStartTimeChange = (e: any) => {
         const selectedStartTime = e.target.value;
@@ -288,6 +295,7 @@ const CheckAvailability = () => {
                                 onChange={handleDateChange}
                                 tileClassName={tileClassName}
                                 tileContent={tileContent}
+                                minDate={new Date()}
                             />
                             <div className={styles.legend}>
                                 <p>

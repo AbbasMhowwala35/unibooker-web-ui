@@ -25,6 +25,7 @@ interface CheckoutPriceDetails {
     cleaning_charge: string;
     tax: string,
     label: string
+     doorStep_price: number;
   }
 // Define Jost font
 const jostFont = Jost({
@@ -135,12 +136,10 @@ export default function Home() {
             wall_amt: userWalletDetails || "0",
             host_id: checkoutDetails?.item_info.host_id || null,
             coupon_code: "",
-            discount_price: "0",
-            coupon_discount: "0",
             discount_type: "",
             cleaning_charges: checkoutPriceDetails?.cleaning_charge || "0",
-            start_time: checkoutDetails?.start_time || "6:00 AM",
-            end_time: checkoutDetails?.endTime || "7:30 AM",
+            start_time: checkoutDetails?.start_time ,
+            end_time: checkoutDetails?.endTime,
             onlinepayment: "Active",
             doorStep_price: "40",
         };
@@ -222,7 +221,7 @@ export default function Home() {
                                                 checked={doorstepDelivery}
                                                 onChange={handleDoorstepDeliveryChange}
                                             />
-                                            <label>Choose Doorstep Delivery</label>
+                                            <label>{checkoutPriceDetails?.doorStep_price} Doorstep Delivery</label>
                                         </div>
                                     </div>
                                 </div>

@@ -330,7 +330,7 @@ const EditProfile = () => {
               className="theme_btn flex items-center gap-2 px-4 py-2 text-white bg-red-600 hover:bg-red-700"
               onClick={handleDeleteAccount}
             >
-              <BsTrash className="w-5 h-5" />
+              <BsTrash className="w-5 h-5 me-1" />
               Delete Account
             </button>
           </div>
