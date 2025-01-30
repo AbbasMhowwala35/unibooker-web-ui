@@ -108,15 +108,21 @@ const CheckAvailability = () => {
         return acc;
     }, {});
 
-
     const tileClassName = ({ date }: any) => {
         const dateString = date.toISOString().split('T')[0];
+        const fromDateNormalized = fromDate && new Date(fromDate.setHours(0, 0, 0, 0));
+        const toDateNormalized = toDate && new Date(toDate.setHours(0, 0, 0, 0));
+        const isSelected = fromDateNormalized && toDateNormalized && date >= fromDateNormalized && date <= toDateNormalized;
+        let classNames = '';
         if (availableDates?.includes(dateString)) {
-            return styles.availablity;
+            classNames = styles.availablity;
         } else if (bookedDates?.includes(dateString)) {
-            return styles.booking;
+            classNames = styles.booking;
         }
-        return '';
+        if (isSelected) {
+            classNames += ` ${styles.selectedDate}`;
+        }
+        return classNames;
     };
 
     const tileContent = ({ date }: any) => {
@@ -129,6 +135,24 @@ const CheckAvailability = () => {
             );
         }
         return null;
+    };
+
+    const handleDateChange = async (dates: any) => {
+        if (Array.isArray(dates) && dates.length === 2) {
+            const adjustedFromDate = new Date(dates[0]);
+            adjustedFromDate.setHours(12, 0, 0, 0);
+            setFromDate(adjustedFromDate);
+            const adjustedToDate = new Date(dates[1]);
+            adjustedToDate.setHours(12, 0, 0, 0);
+            setToDate(adjustedToDate);
+            if (adjustedFromDate.toISOString().split('T')[0] === adjustedToDate.toISOString().split('T')[0]) {
+                setStartTime('12:00 AM');
+                const startTimeObj = new Date(`1970-01-01T12:00:00Z`);
+                startTimeObj.setMinutes(startTimeObj.getMinutes() + 30);
+                setEndTime(formatAMPM(startTimeObj));
+            }
+            await checkAvailability(adjustedFromDate, adjustedToDate);
+        }
     };
 
     function formatAMPM(date: Date): string {
@@ -148,24 +172,6 @@ const CheckAvailability = () => {
         const formattedMinutes = minutes.toString().padStart(2, '0');
         return `${formattedHours}:${formattedMinutes} ${ampm}`;
     }
-
-    const handleDateChange = async (dates: any) => {
-        if (Array.isArray(dates) && dates.length === 2) {
-            const adjustedFromDate = new Date(dates[0]);
-            adjustedFromDate.setHours(12, 0, 0, 0);
-            setFromDate(adjustedFromDate);
-            const adjustedToDate = new Date(dates[1]);
-            adjustedToDate.setHours(12, 0, 0, 0);
-            setToDate(adjustedToDate);
-            if (adjustedFromDate.toISOString().split('T')[0] === adjustedToDate.toISOString().split('T')[0]) {
-                setStartTime('12:00 AM');
-                const startTimeObj = new Date(`1970-01-01T12:00:00Z`);
-                startTimeObj.setMinutes(startTimeObj.getMinutes() + 30);
-                setEndTime(formatAMPM(startTimeObj));
-            }
-            await checkAvailability(adjustedFromDate, adjustedToDate);
-        }
-    };
 
     const checkAvailability = async (fromDate: Date, toDate: Date) => {
         const fromDateStr = fromDate.toISOString().split('T')[0];
@@ -214,7 +220,9 @@ const CheckAvailability = () => {
                 if (period === "PM" && hours !== 12) hours += 12;
                 if (period === "AM" && hours === 12) hours = 0;
                 let nextStartSlot = new Date(1970, 0, 1, hours, minutes);
-                if (fromDate && toDate && fromDate.toISOString().split('T')[0] === new Date().toISOString().split('T')[0] && startTime === "12:00 AM") {
+                const today = new Date().toISOString().split('T')[0];
+                const isToday = fromDate && fromDate.toISOString().split('T')[0] === today;
+                if (isToday && startTime === "12:00 AM") {
                     const currentTime = new Date();
                     let currentHours = currentTime.getHours();
                     let currentMinutes = currentTime.getMinutes();
@@ -228,14 +236,22 @@ const CheckAvailability = () => {
                     nextStartSlot.setMinutes(nextStartSlot.getMinutes() + 30);
                 }
                 const slots: { start: string; end: string }[] = [];
-                for (let i = 0; i < 24; i++) {
-                    const startSlot = new Date(nextStartSlot.getTime() + i * 30 * 60000);
-                    const endSlot = new Date(startSlot.getTime() + 30 * 60000);
+                let currentSlot = new Date(nextStartSlot);
+                while (!(currentSlot.getHours() === 23 && currentSlot.getMinutes() === 30)) {
+                    let endSlot = new Date(currentSlot.getTime() + 30 * 60000);
+                    if (endSlot.getHours() === 0 && endSlot.getMinutes() === 0) {
+                        endSlot.setHours(23, 30, 0, 0);
+                    }
                     slots.push({
-                        start: formatTime(startSlot),
+                        start: formatTime(currentSlot),
                         end: formatTime(endSlot),
                     });
+                    currentSlot = new Date(endSlot);
                 }
+                slots.push({
+                    start: "11:30 PM",
+                    end: "11:30 PM",
+                });
                 setTimeSlots(slots);
                 if (fromDate && toDate) {
                     const checkInDate = fromDate.toISOString().split('T')[0];
@@ -249,29 +265,11 @@ const CheckAvailability = () => {
                 console.error("Error generating time slots:", error);
             }
         }
-    }, [startTime, fromDate, toDate]);        
-
+    }, [isavailable, fromDate, toDate]);
+    
     const handleStartTimeChange = (e: any) => {
         const selectedStartTime = e.target.value;
         setStartTime(selectedStartTime);
-        if (fromDate && toDate) {
-            const checkInDate = fromDate.toISOString().split('T')[0];
-            const checkOutDate = toDate.toISOString().split('T')[0];
-            const isSameDay = checkInDate === checkOutDate;
-
-            if (isSameDay) {
-                const [time, period] = selectedStartTime.split(" ");
-                let [hours, minutes] = time.split(":").map(Number);
-                if (period === "PM" && hours !== 12) hours += 12;
-                if (period === "AM" && hours === 12) hours = 0;
-                const startTimeObj = new Date(1970, 0, 1, hours, minutes);
-                startTimeObj.setMinutes(startTimeObj.getMinutes() + 30);
-                const newEndTime = formatTime(startTimeObj);
-                setEndTime(newEndTime);
-            } else {
-                setEndTime(selectedStartTime);
-            }
-        }
     };
 
     if (loading) {
