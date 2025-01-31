@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import api from '../api/api';
 import { toast, ToastContainer } from 'react-toastify';
 import Loader from '../components/common/Loader';
+import Head from 'next/head';
 interface Profile {
     token: string;
     id: string;
@@ -33,6 +34,10 @@ interface CarDetails {
 
 const CheckAvailability = () => {
     const router = useRouter();
+    const [selectedRange, setSelectedRange] = useState<{ start: Date | null; end: Date | null }>({
+        start: null,
+        end: null
+    });
     const [fromDate, setFromDate] = useState<Date | null>(null);
     const [toDate, setToDate] = useState<Date | null>(null);
     const [availabilityData, setAvailabilityData] = useState<AvailabilityData | null>(null);
@@ -138,19 +143,24 @@ const CheckAvailability = () => {
     };
 
     const handleDateChange = async (dates: any) => {
+        console.log(dates)
         if (Array.isArray(dates) && dates.length === 2) {
             const adjustedFromDate = new Date(dates[0]);
             adjustedFromDate.setHours(12, 0, 0, 0);
-            setFromDate(adjustedFromDate);
             const adjustedToDate = new Date(dates[1]);
             adjustedToDate.setHours(12, 0, 0, 0);
-            setToDate(adjustedToDate);
             if (adjustedFromDate.toISOString().split('T')[0] === adjustedToDate.toISOString().split('T')[0]) {
                 setStartTime('12:00 AM');
                 const startTimeObj = new Date(`1970-01-01T12:00:00Z`);
                 startTimeObj.setMinutes(startTimeObj.getMinutes() + 30);
                 setEndTime(formatAMPM(startTimeObj));
             }
+            setFromDate(adjustedFromDate);
+            setToDate(adjustedToDate);
+            setSelectedRange({
+                start: adjustedFromDate,
+                end: adjustedToDate
+            });
             await checkAvailability(adjustedFromDate, adjustedToDate);
         }
     };
@@ -237,6 +247,7 @@ const CheckAvailability = () => {
                 }
                 const slots: { start: string; end: string }[] = [];
                 let currentSlot = new Date(nextStartSlot);
+                const isFutureDate = toDate && toDate > new Date() 
                 while (!(currentSlot.getHours() === 23 && currentSlot.getMinutes() === 30)) {
                     let endSlot = new Date(currentSlot.getTime() + 30 * 60000);
                     if (endSlot.getHours() === 0 && endSlot.getMinutes() === 0) {
@@ -244,7 +255,7 @@ const CheckAvailability = () => {
                     }
                     slots.push({
                         start: formatTime(currentSlot),
-                        end: formatTime(endSlot),
+                        end: isFutureDate ? "12:30 AM" : formatTime(endSlot),
                     });
                     currentSlot = new Date(endSlot);
                 }
@@ -277,6 +288,13 @@ const CheckAvailability = () => {
     }
 
     return (
+        <>
+        <Head>
+                <title>Check Availability | Unibooker</title>
+                <meta name="description" content="Wishlist for cars and bikes on Unibooker" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <link rel="icon" href="/favicon.ico" />
+            </Head>
         <main>
             <Container className={styles.availabilityPage}>
                 <Row className="justify-content-center text-center my-5 ">
@@ -294,6 +312,7 @@ const CheckAvailability = () => {
                                 tileClassName={tileClassName}
                                 tileContent={tileContent}
                                 minDate={new Date()}
+                                value={selectedRange.start && selectedRange.end ? [selectedRange.start, selectedRange.end] : null}
                             />
                             <div className={styles.legend}>
                                 <p>
@@ -317,7 +336,7 @@ const CheckAvailability = () => {
                                                 className="customFormcontrol"
                                                 type="date"
                                                 value={fromDate ? fromDate.toISOString().split('T')[0] : ''}
-                                                onChange={(e) => setFromDate(new Date(e.target.value))}
+                                                // onChange={(e) => setFromDate(new Date(e.target.value))}
                                             />
                                         </InputGroup>
                                     </Form.Group>
@@ -333,7 +352,7 @@ const CheckAvailability = () => {
                                                 className="customFormcontrol"
                                                 type="date"
                                                 value={toDate ? toDate.toISOString().split('T')[0] : ''}
-                                                onChange={(e) => setToDate(new Date(e.target.value))}
+                                                // onChange={(e) => setToDate(new Date(e.target.value))}
                                             />
                                         </InputGroup>
                                     </Form.Group>
@@ -393,6 +412,7 @@ const CheckAvailability = () => {
             </Container>
             <ToastContainer />
         </main>
+        </>
     );
 };
 

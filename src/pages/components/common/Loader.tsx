@@ -1,5 +1,4 @@
 import React from "react";
-import { Spinner } from "react-bootstrap";
 
 const Loader: React.FC = () => {
   return (
@@ -12,7 +11,7 @@ const Loader: React.FC = () => {
         height: "100vh",
       }}
     >
-      <Spinner animation="border" variant="primary" />
+      <div id="preloader"></div>
     </div>
   );
 };
