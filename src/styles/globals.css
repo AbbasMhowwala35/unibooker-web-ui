@@ -132,7 +132,11 @@ span.PageInfo.active {
 .input-group {
   height: 50px;
   background: #f7f7f7;
-  justify-content: flex-end;
+  align-items: center !important;
+  justify-content: flex-start;
+  border-radius: 10px;
+  gap: 20px;
+  padding-left: 10px;
 }
 
 span.input-group-text {
@@ -234,10 +238,10 @@ body.dark {
 
 #preloader::before {
   position: absolute;
-  top: 40%;
+  top: 50%;
   left: 0;
-  width: 100px;
-  height: 100px;
+  width: 70px;
+  height: 70px;
   right: 0;
   margin: 0 auto;
 }
@@ -261,3 +265,9 @@ body.dark {
       -webkit-transform: rotate(360deg);
   }
 }
+
+/* select#endTime option:last-child,
+select#startTime option:last-child
+{
+  display: none;
+} */

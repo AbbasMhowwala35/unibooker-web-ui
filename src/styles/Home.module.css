@@ -303,6 +303,27 @@
 @media screen and (max-width: 767px) {
   .company_logos_row {
     flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .most_viewed_cars_img {
+    height: 500px;
+  }
+
+  .clientBox {
+    margin: 0 40px;
+  }
+
+  .carouselValue {
+    display: none;
+  }
+
+  .locationImg {
+    width: 100%;
+    max-width: 100%;
+    height: 300px;
   }
 
   .company_logos_div {

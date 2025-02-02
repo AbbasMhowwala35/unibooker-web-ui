@@ -12,6 +12,8 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Loader from "../components/common/Loader";
 import api from "../api/api";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 interface CheckoutPriceDetails {
     total: number;
     duration: string,
@@ -154,8 +156,19 @@ export default function Home() {
                 console.error('Booking failed:', response.data.message);
             }
         } catch (error) {
-            console.error("Error booking item", error);
             setLoading(false);
+            if (error instanceof AxiosError) {
+                if (error.response?.status === 409) {
+                    const errorMsg = error.response.data.message;
+                    toast.error(errorMsg);
+                } else if (error.response?.status) {
+                    console.error("API error:", error.response.data.message || "Unknown error");
+                }
+            } else if (error instanceof Error) {
+                console.error("An unexpected error occurred:", error.message);
+            } else {
+                console.error("An unexpected error occurred:", error);
+            }
         }
     };
 

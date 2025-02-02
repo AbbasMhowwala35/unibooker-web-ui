@@ -13,6 +13,8 @@
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "classnames": "^2.5.1",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "libphonenumber-js": "^1.11.18",
     "next": "^15.1.5",
     "next-auth": "^4.24.11",
