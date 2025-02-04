@@ -271,3 +271,8 @@ select#startTime option:last-child
 {
   display: none;
 } */
+
+#startTime option[value=""],
+select#endTime option[value=""] {
+  display: none;
+}

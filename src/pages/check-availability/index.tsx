@@ -77,33 +77,29 @@ const CheckAvailability = () => {
     }, []);
 
     const handleRedirect = async () => {
-        if (!fromDate || !toDate || !startTime || !endTime) {
-            toast.error("Please select check-in, check-out, start time, and end time.");
-            return;
-        }
-        if (!selectedCar) {
-            toast.error("Car details are missing.");
-            return;
-        }
-
-        const checkInDate = fromDate.toISOString().split('T')[0];
-        const checkOutDate = toDate.toISOString().split('T')[0];
+        const checkInDate = fromDate?.toISOString().split('T')[0];
+        const checkOutDate = toDate?.toISOString().split('T')[0]
         const isSameDay = checkInDate === checkOutDate;
-
-        if (isSameDay && startTime === endTime) {
+        const formattedStartTime = startTime?.trim();
+        const formattedEndTime = endTime?.trim();
+        if (!formattedStartTime || !formattedEndTime) {
+            toast.error("Please select a valid start and end time.");
+            return;
+        }
+        if (isSameDay && formattedStartTime === formattedEndTime) {
+            console.error("Error: Start time and end time cannot be the same for same-day bookings.");
             toast.error("For same-day bookings, end time must be different from start time.");
             return;
         }
-
         const checkoutData = {
             ...selectedCar,
-            checkInDate: fromDate.toISOString().split('T')[0],
-            checkOutDate: toDate.toISOString().split('T')[0],
+            checkInDate: fromDate?.toISOString().split('T')[0],
+            checkOutDate: toDate?.toISOString().split('T')[0],
             startTime: startTime,
             endTime: endTime,
         };
         sessionStorage.setItem('checkoutDetails', JSON.stringify(checkoutData));
-        sessionStorage.removeItem('carDetails');
+        // sessionStorage.removeItem('carDetails');
         router.push('/checkout');
     };
 
@@ -120,11 +116,12 @@ const CheckAvailability = () => {
         const toDateNormalized = toDate && new Date(toDate.setHours(0, 0, 0, 0));
         const isSelected = fromDateNormalized && toDateNormalized && date >= fromDateNormalized && date <= toDateNormalized;
         let classNames = '';
-        if (availableDates?.includes(dateString)) {
-            classNames = styles.availablity;
-        } else if (bookedDates?.includes(dateString)) {
-            classNames = styles.booking;
+        if (bookedDates?.includes(dateString)) {
+            classNames = `${styles.booking} ${styles.booked}`;
         }
+        else  if (availableDates?.includes(dateString)) {
+            classNames = styles.availablity;
+        } 
         if (isSelected) {
             classNames += ` ${styles.selectedDate}`;
         }
@@ -157,12 +154,12 @@ const CheckAvailability = () => {
                 setIsAvailable(false);
                 return;
             }
-            if (adjustedFromDate.toISOString().split('T')[0] === adjustedToDate.toISOString().split('T')[0]) {
-                setStartTime('12:00 AM');
-                const startTimeObj = new Date(`1970-01-01T12:00:00Z`);
-                startTimeObj.setMinutes(startTimeObj.getMinutes() + 30);
-                setEndTime(formatAMPM(startTimeObj));
-            }
+            // if (adjustedFromDate.toISOString().split('T')[0] === adjustedToDate.toISOString().split('T')[0]) {
+            //     setStartTime('12:00 AM');
+            //     const startTimeObj = new Date(`1970-01-01T12:00:00Z`);
+            //     startTimeObj.setMinutes(startTimeObj.getMinutes() + 30);
+            //     setEndTime(formatAMPM(startTimeObj));
+            // }
             setFromDate(adjustedFromDate);
             setToDate(adjustedToDate);
             setSelectedRange({
@@ -228,7 +225,14 @@ const CheckAvailability = () => {
             setLoading(false)
         }
     };
-    
+
+    const staticTimeSlots = [
+        '12:30 AM', '1:00 AM', '1:30 AM', '2:00 AM', '2:30 AM', '3:00 AM', '3:30 AM', '4:00 AM', '4:30 AM', '5:00 AM', '5:30 AM', '6:00 AM',
+        '6:30 AM', '7:00 AM', '7:30 AM', '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM',
+        '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM', '5:00 PM', '5:30 PM', '6:00 PM',
+        '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM', '10:30 PM', '11:00 PM',
+    ];
+
     const generateSlots = (startSlot: Date, slots: { start: string; end: string }[]) => {
         startSlot = new Date(startSlot.getTime() + 30 * 60000);
         while (startSlot.getHours() < 23 || (startSlot.getHours() === 23 && startSlot.getMinutes() < 30)) {
@@ -237,7 +241,7 @@ const CheckAvailability = () => {
             startSlot = new Date(startSlot.getTime() + 30 * 60000);
         }
         slots.push({ start: "11:30 PM", end: "11:30 PM" });
-    };    
+    };
 
     const generateTimeSlots = (startTime: string, fromDate: Date, toDate: Date) => {
         const isTodayDate = isToday(fromDate);
@@ -248,7 +252,7 @@ const CheckAvailability = () => {
         if (isStartTimeDifferent) {
             let nextStartSlot = getNextStartSlot(startTime, isTodayDate);
             generateSlots(nextStartSlot, slots);
-            return slots; 
+            return slots;
         }
         let nextStartSlot: Date;
         if (startTime && startTime !== "12:00 AM") {
@@ -256,29 +260,37 @@ const CheckAvailability = () => {
         } else {
             if (isTodayDate && isEndDateInFuture) {
                 nextStartSlot = getNextStartSlot(startTime, isTodayDate);
-            } else if (isFutureDate) {
-                nextStartSlot = new Date(fromDate.setHours(0, 30, 0, 0));
             } else {
                 nextStartSlot = getNextStartSlot(startTime, isTodayDate);
             }
         }
         let nextEndSlot: Date;
-        let slotEnd: Date | null = isEndDateInFuture ? new Date(fromDate.setHours(0, 0, 0, 0)) : null;
         while (nextStartSlot.getHours() !== 23 || nextStartSlot.getMinutes() !== 30) {
             if (isTodayDate) {
                 nextEndSlot = new Date(nextStartSlot);
             } else {
-                nextEndSlot = new Date(nextStartSlot.getTime() + 30 * 60000); 
+                nextEndSlot = new Date(nextStartSlot.getTime() + 30 * 60000);
             }
             if (isEndDateInFuture) {
-                slotEnd = slotEnd ? new Date(slotEnd.getTime() + 30 * 60000) : new Date(fromDate.setHours(0, 30, 0, 0));
+                slots.push({
+                    start: formatTime(nextStartSlot),
+                    end: "",
+                });
+            } else {
+                slots.push({
+                    start: formatTime(nextStartSlot),
+                    end: formatTime(nextEndSlot),
+                });
             }
-            slots.push({
-                start: formatTime(nextStartSlot),
-                end: isEndDateInFuture && slotEnd ? formatTime(slotEnd) : formatTime(nextEndSlot),
-
-            });
             nextStartSlot = new Date(nextStartSlot.getTime() + 30 * 60000);
+        }
+        if (isEndDateInFuture) {
+            staticTimeSlots.forEach(staticSlot => {
+                slots.push({
+                    start: '',
+                    end: staticSlot,
+                });
+            });
         }
         slots.push({
             start: "11:30 PM",
@@ -321,13 +333,13 @@ const CheckAvailability = () => {
                 console.error("Error generating time slots:", error);
             }
         }
-    }, [startTime, isavailable, fromDate, toDate]);
+    }, [isavailable, fromDate, toDate]);
 
     const handleStartTimeChange = (e: any) => {
         const selectedStartTime = e.target.value;
         setStartTime(selectedStartTime);
     };
-       
+
     if (loading) {
         return <Loader />;
     }
