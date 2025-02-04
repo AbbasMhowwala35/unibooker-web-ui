@@ -129,9 +129,9 @@ const Index = () => {
             ]);
         }
     }, [settings])
-
+    
     useEffect(() => {
-        const selectedCity = localStorage.getItem("selectedCity");
+        const selectedCity = sessionStorage.getItem("selectedCity");
         const filtered = homeData.filter((car) => {
             const itemInfo = car.item_info ? JSON.parse(car.item_info) : {};
             const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(car.item_type_id.toString());

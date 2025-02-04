@@ -86,11 +86,17 @@ const CheckAvailability = () => {
             toast.error("Please select a valid start and end time.");
             return;
         }
-        if (isSameDay && formattedStartTime === formattedEndTime) {
-            console.error("Error: Start time and end time cannot be the same for same-day bookings.");
-            toast.error("For same-day bookings, end time must be different from start time.");
-            return;
+        if (isSameDay) {
+            if (formattedStartTime === formattedEndTime) {
+                toast.error("For same-day bookings, end time must be different from start time.");
+                return;
+            }
+            if (formattedEndTime < formattedStartTime) {
+                toast.error("For same-day bookings, end time must be later than start time.");
+                return;
+            }
         }
+    
         const checkoutData = {
             ...selectedCar,
             checkInDate: fromDate?.toISOString().split('T')[0],

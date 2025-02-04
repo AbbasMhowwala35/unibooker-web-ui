@@ -44,6 +44,7 @@ interface CarDetails {
     checkInDate: string;
     checkOutDate: string;
     start_time: string;
+    startTime: string;
     endTime: string;
     doorstep_delivery: boolean;
     item_info: {
@@ -188,6 +189,8 @@ export default function Home() {
         return <Loader />;
     }
 
+    console.log(checkoutDetails)
+
     return (
         <div className={`${styles.page} ${jostFont.variable}`}>
             <Head>
@@ -211,7 +214,7 @@ export default function Home() {
                                         <p><Image src={location} alt="Location" />{checkoutDetails?.address}</p>
                                     </div>
                                     <div className={styles.checkoutContentDetailBlock}>
-                                        <h6>${checkoutDetails?.price} <span>/Night</span></h6>
+                                        <h6>${checkoutDetails?.price} <span>/Day</span></h6>
                                         <p>{checkoutDetails?.item_rating}<BsStarFill /></p>
                                         <small>12km</small>
                                     </div>
@@ -223,8 +226,12 @@ export default function Home() {
                                 <div className={styles.checkoutRightSectionContent}>
                                     <h3>Your Trip</h3>
                                     <div className={styles.checkoutContentSectionRow}>
-                                        <h6>Check In <span>{checkoutDetails?.checkInDate}</span></h6>
-                                        <p>Check Out <span>{checkoutDetails?.checkOutDate}</span></p>
+                                        <h6>Check In <span>{checkoutDetails?.checkInDate ? new Date(checkoutDetails.checkInDate).toLocaleDateString('en-GB') : ''}</span></h6>
+                                        <p>Check Out <span>{checkoutDetails?.checkOutDate ? new Date(checkoutDetails.checkOutDate).toLocaleDateString('en-GB') : ''}</span></p>
+                                    </div>
+                                    <div className={styles.checkoutContentSectionRow}>
+                                        <h6>Start Time <span>{checkoutDetails?.startTime}</span></h6>
+                                        <p>End Time <span>{checkoutDetails?.endTime}</span></p>
                                     </div>
                                     <div className={styles.doorstepDeliverySection}>
                                         <h6>Doorstep Delivery</h6>
@@ -241,17 +248,17 @@ export default function Home() {
                                 <div className={styles.checkoutRightSectionContent}>
                                     <h3>Price Details</h3>
                                     <div className={styles.checkoutContentSectionRow}>
-                                        <h6>Price (1night) for {checkoutPriceDetails?.duration} {checkoutPriceDetails?.label}</h6>
+                                        <h6>Price ({checkoutPriceDetails?.duration} {checkoutPriceDetails?.label})</h6>
                                         <p className={styles.greenText}>USD {checkoutPriceDetails?.price_per_night}</p>
                                     </div>
-                                    <div className={styles.checkoutContentSectionRow}>
+                                    {/* <div className={styles.checkoutContentSectionRow}>
                                         <h6>Service Charge</h6>
                                         <p>USD {checkoutPriceDetails?.service_charge} </p>
                                     </div>
                                     <div className={styles.checkoutContentSectionRow}>
                                         <h6>Cleaning Charge</h6>
                                         <p>USD {checkoutPriceDetails?.cleaning_charge} </p>
-                                    </div>
+                                    </div> */}
                                     <div className={styles.checkoutContentSectionRow}>
                                         <h6>Tax</h6>
                                         <p>USD {checkoutPriceDetails?.tax} </p>

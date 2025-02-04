@@ -425,7 +425,8 @@ export default function Home() {
             </div>
           </section>
           {/* Travel Stories Section */}
-          <section className={styles.travel_stories}>
+          <div className="d-none">
+            <section className={styles.travel_stories}>
             <h3>Client Testimonial</h3>
             <Row className="align-items-center">
               <Col md={6}>
@@ -451,6 +452,7 @@ export default function Home() {
               </Col>
             </Row>
           </section>
+          </div>
         </main>
         <Newsletter />
       </div>
