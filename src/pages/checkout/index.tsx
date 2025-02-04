@@ -6,7 +6,7 @@ import { Button, Col, Container, Modal, Row } from "react-bootstrap";
 import Image from "next/image";
 import wishlist from '../../Images/wishlist.svg'
 import location from '../../Images/location.svg'
-import { BsStarFill } from "react-icons/bs";
+import { BsFillTicketPerforatedFill, BsStarFill } from "react-icons/bs";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -26,9 +26,10 @@ interface CheckoutPriceDetails {
     base_price: string,
     cleaning_charge: string;
     tax: string,
+    coupon_discount: string;
     label: string
-     doorStep_price: number;
-  }
+    doorStep_price: number;
+}
 // Define Jost font
 const jostFont = Jost({
     variable: "--font-jost",
@@ -73,6 +74,7 @@ export default function Home() {
     const [showCancellationModal, setShowCancellationModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [doorstepDelivery, setDoorstepDelivery] = useState(false);
+    const [coupon, setCoupon] = useState("");
 
     useEffect(() => {
         const storedCheckoutDetails = sessionStorage.getItem('checkoutDetails');
@@ -100,7 +102,7 @@ export default function Home() {
         }
     }, [userWalletDetails]);
 
-    const fetchItemPrices = async () => {
+    const fetchItemPrices = async (appliedCoupon = "") => {
         setLoading(true)
         try {
             const payload = {
@@ -111,6 +113,7 @@ export default function Home() {
                 end_time: checkoutDetails?.endTime,
                 wallet_amount: userWalletDetails,
                 doorstep_delivery: doorstepDelivery ? 1 : 0,
+                coupon_code: appliedCoupon,
             };
             const response = await api.post('/getItemPrices', payload);
             setCheckoutPriceDetails(response.data.data)
@@ -122,7 +125,7 @@ export default function Home() {
             setLoading(false)
         }
     }
-    
+
     const handleBookItem = async () => {
         const bookingPayload = {
             item_id: checkoutDetails?.id,
@@ -141,7 +144,7 @@ export default function Home() {
             coupon_code: "",
             discount_type: "",
             cleaning_charges: checkoutPriceDetails?.cleaning_charge || "0",
-            start_time: checkoutDetails?.start_time ,
+            start_time: checkoutDetails?.start_time,
             end_time: checkoutDetails?.endTime,
             onlinepayment: "Active",
             doorStep_price: "40",
@@ -246,19 +249,63 @@ export default function Home() {
                                     </div>
                                 </div>
                                 <div className={styles.checkoutRightSectionContent}>
+                                    <h3>Coupon Code</h3>
+                                    <div className={styles.checkoutContentSectionRow} style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                                        <div style={{ position: "relative", width: "100%" }}>
+                                            <BsFillTicketPerforatedFill
+                                                style={{
+                                                    position: "absolute",
+                                                    left: "10px",
+                                                    top: "50%",
+                                                    transform: "translateY(-50%)",
+                                                    color: "#000",
+                                                    fontSize: "16px",
+                                                    zIndex: "99"
+                                                }}
+                                            />
+                                            <input
+                                                type="text"
+                                                className="input-group border-0"
+                                                placeholder="Enter Coupon Code"
+                                                value={coupon}
+                                                onChange={(e) => setCoupon(e.target.value)}
+                                                style={{
+                                                    paddingLeft: "40px",
+                                                }}
+                                            />
+                                        </div>
+                                        {coupon && (
+                                            <button
+                                                onClick={() => fetchItemPrices(coupon)}
+                                                disabled={loading}
+                                                style={{
+                                                    position: "absolute",
+                                                    right: "10px",
+                                                    top: "20%",
+                                                    color: "#17BEBB",
+                                                    background: "transparent",
+                                                    border: "none"
+                                                }}
+                                            >
+                                                {loading ? "Applying..." : "Apply"}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className={styles.checkoutRightSectionContent}>
                                     <h3>Price Details</h3>
                                     <div className={styles.checkoutContentSectionRow}>
                                         <h6>Price ({checkoutPriceDetails?.duration} {checkoutPriceDetails?.label})</h6>
                                         <p className={styles.greenText}>USD {checkoutPriceDetails?.price_per_night}</p>
                                     </div>
-                                    {/* <div className={styles.checkoutContentSectionRow}>
-                                        <h6>Service Charge</h6>
-                                        <p>USD {checkoutPriceDetails?.service_charge} </p>
-                                    </div>
-                                    <div className={styles.checkoutContentSectionRow}>
-                                        <h6>Cleaning Charge</h6>
-                                        <p>USD {checkoutPriceDetails?.cleaning_charge} </p>
-                                    </div> */}
+                                    {checkoutPriceDetails?.coupon_discount &&
+                                    !isNaN(Number(checkoutPriceDetails.coupon_discount)) &&
+                                    Number(checkoutPriceDetails.coupon_discount) > 0 && (
+                                        <div className={styles.checkoutContentSectionRow}>
+                                            <h6>Coupon ({coupon})</h6>
+                                            <p>-- USD {checkoutPriceDetails?.coupon_discount} </p>
+                                        </div>
+                                    )}
                                     <div className={styles.checkoutContentSectionRow}>
                                         <h6>Tax</h6>
                                         <p>USD {checkoutPriceDetails?.tax} </p>
