@@ -148,23 +148,35 @@ const settings = {
 export default function Home() {
   const router = useRouter();
   const [homeData, setHomeData] = useState<HomeData | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{ city_name: string; image: string } | null>(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [locationClicked, setLocationClicked] = useState<string | undefined>(undefined); // eslint-disable-line
   const [brandClicked, setBrandClicked] = useState<string | undefined>(undefined); // eslint-disable-line
   const [loading, setLoading] = useState(true);
-  
+
+  const handleSearch = () => {
+    if (!selectedLocation) {
+      return;
+    }
+    sessionStorage.setItem("selectedCity", JSON.stringify(selectedLocation));
+    sessionStorage.setItem("startDate", startDate);
+    sessionStorage.setItem("endDate", endDate);
+    router.push("/items-list");
+  };
 
   useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const response = await api.get("/homeData");
-          setHomeData(response.data.data);
-          setLoading(false);
-        } catch (error) {
-          console.error("Error fetching home data:", error);
-          setLoading(false);
-        }
-      };
-      fetchData();
+    const fetchData = async () => {
+      try {
+        const response = await api.get("/homeData");
+        setHomeData(response.data.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching home data:", error);
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   const handleLocationClick = (cityName: string) => {
@@ -177,7 +189,7 @@ export default function Home() {
     setBrandClicked(id);
     sessionStorage.setItem("selectedBrand", id);
     router.push('/items-list');
-  };  
+  };
 
   const saveSelectedCar = (car: MostViewedItem) => {
     sessionStorage.setItem("selectedCar", JSON.stringify(car));
@@ -223,7 +235,16 @@ export default function Home() {
                         <Col md={2}>
                           <div className="form-inputs mb-3">
                             <label htmlFor="city">City</label>
-                            <select id="city" className="form-control">
+                            <select
+                              id="city"
+                              className="form-control"
+                              onChange={(e) => {
+                                const selected = homeData?.locations.find(
+                                  (location) => location.city_name === e.target.value
+                                );
+                                setSelectedLocation(selected || null); 
+                              }}
+                            >
                               {homeData?.locations.map((location, index) => (
                                 <option key={index} value={location.city_name}>
                                   {location.city_name}
@@ -246,17 +267,29 @@ export default function Home() {
                         <Col md={2}>
                           <div className="form-inputs mb-3">
                             <label htmlFor="startDate">Trip Starts</label>
-                            <input id="startDate" type="datetime-local" className="form-control" />
+                            <input
+                              id="startDate"
+                              type="date"
+                              className="form-control"
+                              value={startDate}
+                              onChange={(e) => setStartDate(e.target.value)}
+                            />
                           </div>
                         </Col>
                         <Col md={2}>
                           <div className="form-inputs mb-3">
                             <label htmlFor="endDate">Trip Ends</label>
-                            <input id="endDate" type="datetime-local" className="form-control" />
+                            <input
+                              id="endDate"
+                              type="date"
+                              className="form-control"
+                              value={endDate}
+                              onChange={(e) => setEndDate(e.target.value)}
+                            />
                           </div>
                         </Col>
                         <Col md={2}>
-                          <Button className={styles.theme_btn} type="submit">
+                          <Button className={styles.theme_btn} type="submit" onClick={handleSearch}>
                             Search Car
                           </Button>
                         </Col>
@@ -327,7 +360,7 @@ export default function Home() {
             <div className={styles.company_logos_row}>
               {homeData?.makes.map((make) => (
                 <div key={make.id}>
-                  <div className={styles.company_logos_div}  onClick={() => handleBrandClick(make.id)} style={{ cursor: "pointer" }}>
+                  <div className={styles.company_logos_div} onClick={() => handleBrandClick(make.id)} style={{ cursor: "pointer" }}>
                     <Image
                       src={make.imageURL}
                       alt={make.name}
@@ -427,31 +460,31 @@ export default function Home() {
           {/* Travel Stories Section */}
           <div className="d-none">
             <section className={styles.travel_stories}>
-            <h3>Client Testimonial</h3>
-            <Row className="align-items-center">
-              <Col md={6}>
-                <Image src={testimonial} className={`${styles.travel_stories_img} img-fluid`} alt="Travel Story" />
-              </Col>
-              <Col md={6}>
-                <div className={styles.clientBox}>
-                  <Slider {...settings}>
-                    {testimonials.map((testimonial, index) => (
-                      <div key={index} className={styles.testimonialSlide}>
-                        <p>{testimonial.testimonial}</p>
-                        <div className={`${styles.testimonialUser} d-flex gap-3`}>
-                          <Image src={testimonial.image} className={styles.testimonial_img} alt={`Testimonial from ${testimonial.name}`} />
-                          <div className={styles.clientInfo}>
-                            <h5>{testimonial.name}</h5>
-                            <p>{testimonial.location}</p>
+              <h3>Client Testimonial</h3>
+              <Row className="align-items-center">
+                <Col md={6}>
+                  <Image src={testimonial} className={`${styles.travel_stories_img} img-fluid`} alt="Travel Story" />
+                </Col>
+                <Col md={6}>
+                  <div className={styles.clientBox}>
+                    <Slider {...settings}>
+                      {testimonials.map((testimonial, index) => (
+                        <div key={index} className={styles.testimonialSlide}>
+                          <p>{testimonial.testimonial}</p>
+                          <div className={`${styles.testimonialUser} d-flex gap-3`}>
+                            <Image src={testimonial.image} className={styles.testimonial_img} alt={`Testimonial from ${testimonial.name}`} />
+                            <div className={styles.clientInfo}>
+                              <h5>{testimonial.name}</h5>
+                              <p>{testimonial.location}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </Slider>
-                </div>
-              </Col>
-            </Row>
-          </section>
+                      ))}
+                    </Slider>
+                  </div>
+                </Col>
+              </Row>
+            </section>
           </div>
         </main>
         <Newsletter />

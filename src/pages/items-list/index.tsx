@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styles from "@/styles/CarList.module.css";
 import { Col, Container, Row } from 'react-bootstrap';
 import CarCard from '../components/common/CarCard';
@@ -74,6 +74,8 @@ const Index = () => {
     const googleKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
     const [markerRef] = useAdvancedMarkerRef();
     const mapRef = useRef<google.maps.Map | null>(null);
+    const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [prevCenter, setPrevCenter] = useState<{ lat: number; lng: number } | null>(null);
     const [viewMode, setViewMode] = useState<"list" | "map">("list");
     const [homeData, setHomeData] = useState<Car[]>([]);
     const [filteredData, setFilteredData] = useState<Car[]>([]);
@@ -96,6 +98,7 @@ const Index = () => {
     const mapContainerStyle = { width: "100%", height: "1000px" };
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: 0, lng: 0 });
     const [selectedCar, setSelectedCar] = useState<Car | null>(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const data = sessionStorage.getItem("data");
         const selectedBrand = Number(sessionStorage.getItem("selectedBrand"));
@@ -176,7 +179,7 @@ const Index = () => {
         setFilteredData(filtered);
     }, [selectedCategories, priceRange, selectedYears]);
 
-    const fetchFilteredData = async (lat?: number, lng?:number) => {
+    const fetchFilteredData = async (lat?: number, lng?: number) => {
         if (!hasFilterChanged && !selectedCityName) return;
         try {
             setLoading(true);
@@ -296,6 +299,25 @@ const Index = () => {
             }
         }
     };
+
+    const handleCameraChange = useCallback((ev: any) => {
+        if (ev.detail) {
+            const newCenter = {
+                lat: ev.detail.center.lat,
+                lng: ev.detail.center.lng,
+            };
+            setMapCenter(newCenter);
+            if (dragTimeoutRef.current) {
+                clearTimeout(dragTimeoutRef.current);
+            }
+            dragTimeoutRef.current = setTimeout(() => {
+                if (!prevCenter || prevCenter.lat !== newCenter.lat || prevCenter.lng !== newCenter.lng) {
+                    fetchFilteredData(newCenter.lat, newCenter.lng);
+                    setPrevCenter(newCenter);
+                }
+            }, 500);
+        }
+    }, [prevCenter]);
 
     if (loading) {
         return <Loader />;
@@ -448,13 +470,14 @@ const Index = () => {
                             <Col md={9} className='text-center'>
                                 <APIProvider apiKey={googleKey}>
                                     <Map
-                                        mapId={googleKey}
+                                        mapId={'bf51a910020fa25a'}
                                         style={mapContainerStyle}
                                         defaultCenter={mapCenter}
                                         defaultZoom={10}
-                                        gestureHandling={'cooperative'} 
+                                        gestureHandling={'cooperative'}
                                         disableDefaultUI={true}
                                         onBoundsChanged={handleBoundsChanged}
+                                        onCameraChanged={handleCameraChange}
                                     >
                                         {filteredData.map((car, index) => (
                                             <AdvancedMarker
@@ -473,7 +496,7 @@ const Index = () => {
 
                                         ))}
                                         {selectedCar && (
-                                            <InfoWindow position={{ lat: Number(selectedCar.latitude), lng: Number(selectedCar.longitude)}}  onCloseClick={() => setSelectedCar(null)}>
+                                            <InfoWindow position={{ lat: Number(selectedCar.latitude), lng: Number(selectedCar.longitude) }} onCloseClick={() => setSelectedCar(null)}>
                                                 <div key={selectedCar.id} className={styles.CarListItem} onClick={() => saveSelectedCar(selectedCar)}>
                                                     <CarCard
                                                         id={selectedCar.id}
