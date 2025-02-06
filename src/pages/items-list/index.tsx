@@ -291,6 +291,7 @@ const Index = () => {
                 });
                 const sw = bounds?.getSouthWest();
                 const ne = bounds?.getNorthEast();
+                console.log('Bounds changed:', { sw, ne });
                 fetchFilteredData(center.lat(), center.lng());
             }
         }
