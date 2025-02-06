@@ -1,6 +1,6 @@
-export const API_BASE_URL = "https://vehicle.unibooker.app/api/v1/";
-
 import axios from "axios";
+import { toast } from "react-toastify";
+export const API_BASE_URL = "https://vehicle.unibooker.app/api/v1/";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -70,6 +70,30 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const { status, data } = error.response;
+      if (status === 500) {
+        const { ResponseCode, message } = data;
+        if (ResponseCode === 500 && message.toLowerCase().includes("token not match")) {
+          toast.error("Your session has expired. Please log in again.");
+          localStorage.removeItem("userData");
+          window.location.href = "/auth/login";
+        }
+      } else if (status === 429) {
+        toast.error("Too many attempts. Please try again later.");
+      } else {
+        toast.error(data.message || "An error occurred. Please try again.");
+      }
+    } else {
+      toast.error("Network error. Please check your internet connection.");
+    }
     return Promise.reject(error);
   }
 );

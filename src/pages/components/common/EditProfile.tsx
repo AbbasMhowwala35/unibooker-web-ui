@@ -322,7 +322,7 @@ const EditProfile = () => {
       ) : (
         <div className={`${styles.ProfileChildCardForm} ${styles.ProfileViewCard} d-flex justify-content-between gap-5`}>
           <div className={styles.ProfileImgSection}>
-            <Image src={profile?.profile_image?.url || ""} width={50} height={50} alt="Profile" className={styles.profileImageDisplay} />
+            {profile?.profile_image?.url === "" && (<Image src={profile?.profile_image?.url || ""} width={50} height={50} alt="Profile" className={styles.profileImageDisplay} />)}
             <h4>{`${profile.first_name} ${profile.last_name}`}</h4>
             <p>{profile.aboutYourself}</p>
 

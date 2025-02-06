@@ -2,14 +2,13 @@ import React, { useState } from 'react'
 import { Col, Container, Row, Tab, Tabs } from 'react-bootstrap'
 import EditProfile from '../components/common/EditProfile'
 import Booking from '../components/common/Booking'
-import Reviews from '../components/common/Reviews'
 import Settings from '../components/common/Settings'
 import { Jost } from 'next/font/google'
 import styles from "../../styles/Profile.module.css";
 import Head from 'next/head'
-import { FaClipboardList, FaCog, FaStar, FaUserEdit } from 'react-icons/fa'
+import { FaClipboardList, FaCog, FaUserEdit } from 'react-icons/fa'
 import Wallet from '../components/common/Wallet'
-import { BsWallet2 } from 'react-icons/bs'
+import { BsFillTicketDetailedFill, BsWalletFill } from 'react-icons/bs'
 import Tickets from '../components/common/Tickets'
 import Loader from '../components/common/Loader'
 
@@ -64,14 +63,14 @@ const Index = () => {
                                         </>
                                     } 
                                     />
-                                    <Tab 
+                                    {/* <Tab 
                                     eventKey="reviews" 
                                     title={
                                         <>
                                         <FaStar className="me-2" /> Reviews
                                         </>
                                     } 
-                                    />
+                                    /> */}
                                     <Tab 
                                     eventKey="settings" 
                                     title={
@@ -84,7 +83,7 @@ const Index = () => {
                                     eventKey="wallet" 
                                     title={
                                         <>
-                                        <BsWallet2 className="me-2" /> Wallet
+                                        <BsWalletFill className="me-2" /> Wallet
                                         </>
                                     } 
                                     />
@@ -92,7 +91,7 @@ const Index = () => {
                                     eventKey="ticket" 
                                     title={
                                         <>
-                                        <BsWallet2 className="me-2" /> Ticket
+                                        <BsFillTicketDetailedFill className="me-2" /> Ticket
                                         </>
                                     } 
                                     />
@@ -115,9 +114,9 @@ const Index = () => {
                                 <Tab.Pane eventKey="booking" active={activeKey === 'booking'}>
                                     <Booking />
                                 </Tab.Pane>
-                                <Tab.Pane eventKey="reviews" active={activeKey === 'reviews'}>
+                                {/* <Tab.Pane eventKey="reviews" active={activeKey === 'reviews'}>
                                     <Reviews />
-                                </Tab.Pane>
+                                </Tab.Pane> */}
                                 <Tab.Pane eventKey="settings" active={activeKey === 'settings'}>
                                     <Settings />
                                 </Tab.Pane>

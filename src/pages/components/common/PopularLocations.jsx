@@ -13,7 +13,7 @@ const PopularLocations = ({ locations, sliderSettings, variant = 'slider', onLoc
             {variant === 'slider' ? (
                 <Slider className={styles.location_slider} {...sliderSettings}>
                     {locations.map((location, index) => (
-                        <div className={styles.location_card} key={index} onClick={() => onLocationClick(location.city_name)} style={{ cursor: "pointer" }}>
+                        <div className={styles.location_card} key={index} onClick={() => onLocationClick(location)} style={{ cursor: "pointer" }}>
                             <Image
                                 className={styles.locationImg}
                                 src={location.image}
@@ -28,7 +28,7 @@ const PopularLocations = ({ locations, sliderSettings, variant = 'slider', onLoc
             ) : (
                 <div className={styles.grid_layout}>
                     {locations.map((location, index) => (
-                        <div className={styles.location_card} key={index} onClick={() => onLocationClick(location.city_name)} style={{ cursor: "pointer" }}>
+                        <div className={styles.location_card} key={index} onClick={() => onLocationClick(location)} style={{ cursor: "pointer" }}>
                             <Image
                                 src={location.image}
                                 alt={`Location ${index + 1}`}

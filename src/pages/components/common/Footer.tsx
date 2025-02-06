@@ -1,5 +1,5 @@
 import styles from "@/styles/Layout.module.css";
-import logo from '../../../Images/logo.svg';
+import logo from '../../../Images/logo.png';
 import { Col, Container, Row } from "react-bootstrap";
 import Image from "next/image";
 import Link from "next/link";

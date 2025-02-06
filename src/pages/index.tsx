@@ -169,7 +169,7 @@ export default function Home() {
 
   const handleLocationClick = (cityName: string) => {
     setLocationClicked(cityName)
-    sessionStorage.setItem("selectedCity", cityName);
+    sessionStorage.setItem("selectedCity", JSON.stringify(cityName));
     router.push('/items-list')
   };
 

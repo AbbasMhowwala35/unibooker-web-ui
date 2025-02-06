@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from 'next/image';
-import logo from '../../../Images/logo.svg';
+import logo from '../../../Images/logo.png';
 import userIcon from '../../../Images/user.svg';
 import wishlist from '../../../Images/heart.svg';
 import cart from '../../../Images/cart.svg';
