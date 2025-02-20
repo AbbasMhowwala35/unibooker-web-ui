@@ -1,5 +1,5 @@
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import { Jost } from "next/font/google";
@@ -19,7 +19,8 @@ import styles from "@/styles/Home.module.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 interface MostViewedItem {
   id: string;
   name: string;
@@ -73,6 +74,20 @@ interface MostViewedItem {
   is_in_wishlist: boolean;
   item_type: string;
 }
+interface Place {
+  name: string;
+  formatted_address: string;
+  rating: number;
+  user_ratings_total: number;
+  icon: string;
+  description: string;
+}
+interface SearchPlace {
+  name: string;
+  formatted_address: string;
+  rating?: number;
+}
+
 interface HomeData {
   locations: {
     city_name: string;
@@ -154,15 +169,14 @@ export default function Home() {
   const [locationClicked, setLocationClicked] = useState<string | undefined>(undefined); // eslint-disable-line
   const [brandClicked, setBrandClicked] = useState<string | undefined>(undefined); // eslint-disable-line
   const [loading, setLoading] = useState(true);
+  const [suggestions, setSuggestions] = useState<Place[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
 
-  const handleSearch = () => {
-    if (!selectedLocation) {
-      return;
-    }
-    sessionStorage.setItem("selectedCity", JSON.stringify(selectedLocation));
+  const handleSearch = (e: React.FormEvent) => {
     sessionStorage.setItem("startDate", startDate);
     sessionStorage.setItem("endDate", endDate);
-    router.push("/items-list");
+    router.push("/items-list"); 
   };
 
   useEffect(() => {
@@ -194,6 +208,46 @@ export default function Home() {
   const saveSelectedCar = (car: MostViewedItem) => {
     sessionStorage.setItem("selectedCar", JSON.stringify(car));
   };
+
+  const fetchSuggestions = async (query: string) => {
+    try {
+      const response = await axios.get(`/api/suggestions?query=${query}`);
+      const places = response.data.results.map((item: SearchPlace) => ({
+        name: item.name,
+        formatted_address: item.formatted_address,
+        rating: item.rating || 0,
+      }));
+      const firstResult = response.data.results[0];
+      const cityData = {
+        city_name: firstResult.name,
+        latitude: firstResult.geometry.location.lat,
+        longitude: firstResult.geometry.location.lng,
+      };
+      sessionStorage.setItem("selectedCity", JSON.stringify(cityData));
+      setSuggestions(places);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    }
+  };  
+
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSuggestionClick = (suggestion: Place) => {
+    setSelectedPlace(suggestion);
+    setSearchQuery(suggestion.name);
+    setSuggestions([]);
+    // triggerItemSearch(suggestion.name);
+  };
+
+  useEffect(() => {
+    if (searchQuery.length > 2) {
+      fetchSuggestions(searchQuery);
+    } else {
+      setSuggestions([]);
+    }
+  }, [searchQuery]);
 
   if (loading) {
     return <Loader />;
@@ -232,7 +286,7 @@ export default function Home() {
                   <Card.Body>
                     <form>
                       <Row>
-                        <Col md={2}>
+                        {/* <Col md={2}>
                           <div className="form-inputs mb-3">
                             <label htmlFor="city">City</label>
                             <select
@@ -252,8 +306,8 @@ export default function Home() {
                               ))}
                             </select>
                           </div>
-                        </Col>
-                        <Col md={4}>
+                        </Col> */}
+                        <Col md={6}>
                           <div className="form-inputs mb-3">
                             <label htmlFor="location">Location</label>
                             <input
@@ -261,7 +315,22 @@ export default function Home() {
                               type="text"
                               className="form-control"
                               placeholder="Enter a location"
+                              value={searchQuery}
+                              onChange={handleSearchChange}
                             />
+                            {suggestions.length > 0 && (
+                              <ul className={styles.suggestions}>
+                                {suggestions.map((suggestion, index) => (
+                                  <li
+                                    key={index}
+                                    onClick={() => handleSuggestionClick(suggestion)}
+                                    className={styles.suggestionItem}
+                                  >
+                                    <div>{suggestion.formatted_address}</div>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
                           </div>
                         </Col>
                         <Col md={2}>
