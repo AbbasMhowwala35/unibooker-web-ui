@@ -5,6 +5,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.setHeader('Access-Control-Allow-Origin', '*'); 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  console.log('API URL:', process.env.NEXT_PUBLIC_SUGGESTION_API_URL);
+  console.log('API Key:', process.env.NEXT_PUBLIC_API_KEY ? 'Exists' : 'Not Set');
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -19,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.status(200).json(response.data);
   } catch (error: any) {
-    console.error('Error fetching suggestions:', error);
-    res.status(500).json({ message: 'Failed to fetch suggestions' });
+    console.error('Error fetching suggestions:', error?.response?.data || error?.message || error);
+    res.status(500).json({ message: 'Failed to fetch suggestions', error: error?.response?.data || error?.message });
   }
 }
