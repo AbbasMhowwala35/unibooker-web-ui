@@ -125,6 +125,7 @@ const Signup = () => {
       const response = await api.post("/userRegister", formData);
       if (response.status === 200) {
         const userData = response.data.data;
+        setOtp(userData.otp_value)
         setRegistrationData(userData);
         setStep("otpVerification");
         toast.success(userData.message);
@@ -157,6 +158,7 @@ const Signup = () => {
       }).toString();
       const response = await api.get(`/ResendOtp?${queryParams}`);
       if (response.status === 200) {
+        setOtp(response.data.data.otp_value)
         toast.success("OTP has been resent successfully.");
       } else {
         toast.error("Failed to resend OTP. Please try again.");

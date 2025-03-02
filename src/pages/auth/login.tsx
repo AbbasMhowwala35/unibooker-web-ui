@@ -81,6 +81,7 @@ const Login = () => {
         if (response.data.message === "Account Inactive") {
           setRegistrationData(response.data.data);
           setStep("otpVerification");
+          setOtp(response.data.data.reset_token)
           toast.info("Your account is inactive. Please verify via OTP.");
         } else {
           const userData = response.data.data;
@@ -117,6 +118,7 @@ const Login = () => {
       }).toString();
       const response = await api.get(`/ResendOtp?${queryParams}`);
       if (response.status === 200) {
+        setOtp(response.data.data.otp_value)
         toast.success("OTP has been resent successfully.");
       } else {
         toast.error("Failed to resend OTP. Please try again.");

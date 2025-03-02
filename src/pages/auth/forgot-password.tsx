@@ -31,7 +31,7 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [timer, setTimer] = useState(10);
+  const [timer, setTimer] = useState(300);
   const [resendEnabled, setResendEnabled] = useState(false);
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -59,6 +59,7 @@ const ForgotPassword = () => {
       setResetToken(response.data.data.reset_token);
       setShoworgotPasswordForm(false)
       setShowOtpForm(true)
+      setOtp(response.data.data.reset_token)
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -106,6 +107,7 @@ const ForgotPassword = () => {
       }).toString();
       const response = await api.get(`/ResendToken?${queryParams}`);
       if (response.status === 200) {
+        setOtp(response.data.data.reset_token)
         toast.success("OTP has been resent successfully.");
       } else {
         toast.error("Failed to resend OTP. Please try again.");

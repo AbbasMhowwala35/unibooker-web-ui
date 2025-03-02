@@ -150,15 +150,17 @@ const Index = () => {
         }
 
         if (selectedBrand) {
-            handleBrandChange(selectedBrand)
+            setSelectedBrands([Number(selectedBrand)]); 
+            setHasFilterChanged(true)
         }
-    }, [settings])
+    }, [])
 
     useEffect(() => {
         const selectedCity = sessionStorage.getItem("selectedCity");
         if (selectedCity) {
             const cityData = JSON.parse(selectedCity);
             setSelectedCityName(cityData.city_name);
+            setHasFilterChanged(true)
             const latitude = parseFloat(cityData.latitude);
             const longitude = parseFloat(cityData.longitude);
             setMapCenter({
@@ -211,7 +213,6 @@ const Index = () => {
             const response = await api.post("/itemSearch", params);
             const filteredItems = response.data.data.items;
             setFilteredData(filteredItems);
-            setHasFilterChanged(false);
         } catch (error) {
             console.error("Error fetching filtered data:", error);
         } finally {
@@ -220,10 +221,10 @@ const Index = () => {
     };
 
     useEffect(() => {
-        if (hasFilterChanged) {
+        if (hasFilterChanged && homeData) {
             fetchFilteredData();
         }
-    }, [hasFilterChanged]);
+    }, [hasFilterChanged, selectedBrands, selectedFeatures, selectedOdometer, selectedCityName, sortOption, homeData]);
 
     const handleSortChange = (option: string) => {
         setSortOption(option);

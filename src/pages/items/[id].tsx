@@ -10,6 +10,7 @@ import 'react-medium-image-zoom/dist/styles.css';
 import Newsletter from '../components/common/Newsletter';
 import api from '../api/api';
 import Loader from '../components/common/Loader';
+import { toast, ToastContainer } from 'react-toastify';
 
 interface Feature {
     id: string | number;
@@ -74,6 +75,11 @@ const CarDetails = () => {
     }, []);
 
     const handleRedirect = async () => {
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        if (!userData?.token && !userData?.accessToken) {
+            toast.info("Please log in to check the availability of the vehicle.");
+            return;
+        }
         try {
             const response = await api.get('/getItemDates', {
                 params: {
@@ -154,7 +160,7 @@ const CarDetails = () => {
     };
 
     const isVendor = profile?.id === carDetails?.item_info.host_id;
-    
+
     if (!carDetails) {
         return <Loader />;
     }
@@ -400,6 +406,7 @@ const CarDetails = () => {
                 </Modal.Footer>
             </Modal>
             <Newsletter />
+            <ToastContainer />
         </>
     );
 };
