@@ -192,8 +192,6 @@ export default function Home() {
         return <Loader />;
     }
 
-    console.log(checkoutDetails)
-
     return (
         <div className={`${styles.page} ${jostFont.variable}`}>
             <Head>

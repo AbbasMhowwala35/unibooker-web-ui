@@ -5,8 +5,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.setHeader('Access-Control-Allow-Origin', '*'); 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  console.log('API URL:', process.env.NEXT_PUBLIC_SUGGESTION_API_URL);
-  console.log('API Key:', process.env.NEXT_PUBLIC_API_KEY ? 'Exists' : 'Not Set');
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }

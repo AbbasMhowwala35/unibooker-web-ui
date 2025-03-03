@@ -132,7 +132,8 @@ const Login = () => {
     }
   };
 
-  const handleOtpSubmit = async () => {
+  const handleOtpSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     if (!registrationData) {
       toast.error("No registration data found. Please try logging in again.");
       return;
@@ -251,7 +252,7 @@ const Login = () => {
                       <h2 className={styles.authTitle}>Change Password?</h2>
                       <p className={styles.authPara}>Verification code was sent to your email address.</p>
                     </div>
-                    <form onSubmit={handleOtpSubmit}>
+                    <form>
                       <div className={styles.formGroup}>
                         <div className={styles.inputWithIcon}>
                           <input
@@ -274,7 +275,7 @@ const Login = () => {
                           {resendEnabled ? "Resend OTP" : `Resend OTP in ${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, "0")}`}
                         </button>
                       </div>
-                      <button type="submit" className={styles.authButton}>
+                      <button type="submit" className={styles.authButton} onClick={handleOtpSubmit}>
                         Continue
                       </button>
                     </form>
