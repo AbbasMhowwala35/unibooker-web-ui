@@ -78,9 +78,7 @@ const Header = () => {
 
   const fetchSuggestions = async (query: string) => {
     try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_SUGGESTION_API_URL}?input=${query}&types=(cities)&key=${process.env.NEXT_PUBLIC_API_KEY}`
-      );
+      const response = await axios.get(`/api/suggestions?query=${query}`);
       const places = response.data.results.map((item: SearchPlace) => ({
         name: item.name,
         formatted_address: item.formatted_address,
@@ -97,7 +95,7 @@ const Header = () => {
     } catch (error) {
       console.error('Error fetching suggestions:', error);
     }
-  };  
+  };   
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
