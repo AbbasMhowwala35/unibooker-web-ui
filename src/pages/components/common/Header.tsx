@@ -79,23 +79,29 @@ const Header = () => {
   const fetchSuggestions = async (query: string) => {
     try {
       const response = await axios.get(`/api/suggestions?query=${query}`);
-      const places = response.data.results.map((item: SearchPlace) => ({
+
+      if (!response.data || !response.data.locations || response.data.locations.length === 0) {
+        console.warn('No locations found');
+        setSuggestions([]);
+        return;
+      }
+      const places = response.data.locations.map((item: any) => ({
         name: item.name,
-        formatted_address: item.formatted_address,
+        formatted_address: item.address,
         rating: item.rating || 0,
       }));
-      const firstResult = response.data.results[0];
+      const firstResult = response.data.locations[0];
       const cityData = {
         city_name: firstResult.name,
-        latitude: firstResult.geometry.location.lat,
-        longitude: firstResult.geometry.location.lng,
+        latitude: firstResult.lat,  
+        longitude: firstResult.lng, 
       };
       sessionStorage.setItem("selectedCity", JSON.stringify(cityData));
       setSuggestions(places);
     } catch (error) {
       console.error('Error fetching suggestions:', error);
     }
-  };   
+  };
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
